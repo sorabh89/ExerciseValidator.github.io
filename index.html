@@ -304,40 +304,106 @@
     async function saveToGitHub() {
         const btn = document.getElementById('save-btn');
         const msg = document.getElementById('status-msg');
-        btn.disabled = true;
-        btn.innerText = "Saving...";
-        msg.innerText = "";
-
-        const rec = data[currentIndex];
+        
+        // --- 1. PREPARE THE DATA ---
+        // We take the existing record from memory. 
+        // This ensures hidden fields (like images/similar_exercises) remain untouched.
+        const rec = data[currentIndex]; 
+        
+        // We only overwrite the fields available in the UI
         rec.name = document.getElementById('name').value;
         rec.description = document.getElementById('description').value;
-        const list = (id) => document.getElementById(id).value.split(',').map(s=>s.trim()).filter(s=>s);
+        
+        // Helper to convert comma-text back to array
+        const list = (id) => document.getElementById(id).value
+            .split(',')
+            .map(s=>s.trim())
+            .filter(s=>s.length > 0);
+            
         rec.equipments_required = list('equipments');
         rec.primary_muscle_groups = list('primary_muscles');
         rec.secondary_muscle_groups = list('secondary_muscle_groups');
-        rec.steps = document.getElementById('steps').value.split('\n').map(s=>s.trim()).filter(s=>s);
+        
+        // Helper for steps (new lines)
+        rec.steps = document.getElementById('steps').value
+            .split('\n')
+            .map(s=>s.trim())
+            .filter(s=>s.length > 0);
 
+        // --- 2. PREPARE THE NETWORK REQUEST ---
         const user = localStorage.getItem('gh_username');
         const repo = localStorage.getItem('gh_repo');
         const token = localStorage.getItem('gh_token');
-        const url = `https://api.github.com/repos/${user}/${repo}/contents/${JSON_PATH}`;
+
+        if (!user || !repo || !token) {
+            alert("❌ Settings Missing! Please refresh and enter your GitHub details.");
+            return;
+        }
+
+        // Clean strings to prevent errors
+        const cleanUser = user.trim();
+        const cleanRepo = repo.trim();
+        const cleanPath = JSON_PATH.trim(); // 'aggregated_output.json'
+
+        // API Endpoint
+        const baseUrl = `https://api.github.com/repos/${cleanUser}/${cleanRepo}/contents/${cleanPath}`;
+
+        btn.disabled = true;
+        btn.innerText = "Connecting...";
+        msg.innerText = "Connecting...";
 
         try {
-            const getRes = await fetch(url, { headers: { Authorization: `token ${token}` } });
-            if(!getRes.ok) throw new Error("Connect failed");
-            const getJson = await getRes.json();
-
-            const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-            const putRes = await fetch(url, {
-                method: 'PUT',
-                headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: `Updated ${rec.name}`, content: content, sha: getJson.sha })
+            // --- 3. GET CURRENT FILE SHA (Cache Busted) ---
+            // We add ?t=time to force the browser to get the REAL latest version from GitHub
+            const getRes = await fetch(`${baseUrl}?t=${new Date().getTime()}`, { 
+                headers: { 
+                    Authorization: `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                } 
             });
 
-            if(!putRes.ok) throw new Error("Write failed");
-            msg.innerText = "✅ Saved!"; msg.style.color = "green";
-        } catch (e) { msg.innerText = "❌ " + e.message; msg.style.color = "red"; } 
-        finally { btn.disabled = false; btn.innerText = "💾 Save Changes"; }
+            if (getRes.status === 404) throw new Error("File not found! Check your Repo Name or File Path.");
+            if (getRes.status === 401) throw new Error("Token Invalid! Please generate a new Fine-grained Token.");
+            if (!getRes.ok) throw new Error(`Connection Error: ${getRes.status}`);
+
+            const getJson = await getRes.json();
+            const currentSha = getJson.sha;
+
+            // --- 4. UPLOAD UPDATE ---
+            btn.innerText = "Uploading...";
+            
+            // Encode JSON to Base64 (Standard requirement for GitHub API)
+            const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+            
+            const putRes = await fetch(baseUrl, {
+                method: 'PUT',
+                headers: { 
+                    Authorization: `token ${token}`, 
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({
+                    message: `Update ${rec.name}`, // Commit message
+                    content: content,
+                    sha: currentSha
+                })
+            });
+
+            if (putRes.status === 403) throw new Error("Permission Denied! Your token is Read-Only. You need 'Write' permissions.");
+            if (!putRes.ok) throw new Error(`Upload Failed: ${putRes.status}`);
+
+            msg.innerText = "✅ Saved Successfully!";
+            msg.style.color = "green";
+            // alert("Saved!"); // Optional: Uncomment if you want a popup
+
+        } catch (e) {
+            console.error(e);
+            msg.innerText = "❌ " + e.message;
+            msg.style.color = "red";
+            alert(e.message); // Show the error in a popup so you can read it
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "💾 Save Changes";
+        }
     }
 
     checkAuth();
