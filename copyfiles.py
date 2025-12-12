@@ -9,7 +9,7 @@ def copy_180_files(source_root, target_root):
 
     for current_path, dirs, files in os.walk(source_root):
         # Check files containing _180
-        files_180 = [f for f in files if "_180" in f]
+        files_180 = [f for f in files if "_360" in f]
 
         # If no 180 files in this folder, record the folder path
         if not files_180:

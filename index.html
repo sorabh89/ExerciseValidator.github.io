@@ -109,7 +109,7 @@
     </div>
 
     <div class="card" style="height: fit-content;">
-        <label>Exercise Preview (Merged 180)</label>
+        <label>Exercise Preview (Merged 360)</label>
         <div id="image-container" class="preview-box"></div>
         <div style="text-align: center; font-size: 0.75rem; color: #999; word-break: break-all;" id="img-path-debug"></div>
 
@@ -237,7 +237,7 @@
         // --- IMAGE LOGIC (Merged Path) ---
         const container = document.getElementById('image-container');
         const pathDebug = document.getElementById('img-path-debug');
-        const rawPath = record.csv_image_paths?.['180_path'];
+        const rawPath = record.csv_image_paths?.['360_path'];
 
         if (rawPath) {
             const parts = rawPath.split('/merged/');
@@ -250,7 +250,7 @@
                 container.innerHTML = '<span style="color:orange">Path missing "/merged/"</span>';
             }
         } else {
-            container.innerHTML = '<span style="color:#999; font-size:12px">No 180_path found</span>';
+            container.innerHTML = '<span style="color:#999; font-size:12px">No 360_path found</span>';
         }
 
         // --- ICONS LOGIC ---
