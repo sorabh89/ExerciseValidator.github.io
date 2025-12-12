@@ -5,79 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Takat Exercises Editor</title>
     <style>
-        :root { --primary: #007bff; --bg: #f8f9fa; --surface: #ffffff; }
+        :root { --primary: #007bff; --bg: #f8f9fa; --surface: #ffffff; --border: #dee2e6; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); padding: 20px; max-width: 1400px; margin: 0 auto; }
         
-        .grid { display: grid; grid-template-columns: 1fr 500px; gap: 20px; } /* Increased right column width */
-        .card { background: var(--surface); padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .grid { display: grid; grid-template-columns: 1fr 500px; gap: 20px; }
+        .card { background: var(--surface); padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
+        
+        /* Controls */
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         h2 { margin: 0; font-size: 1.2rem; color: #333; }
         
+        /* Inputs */
         label { display: block; font-size: 0.9rem; font-weight: 700; color: #444; margin-top: 15px; margin-bottom: 6px; }
         input, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 14px; }
         .row { display: flex; gap: 15px; }
         .col { flex: 1; }
 
-        /* --- IMAGES & PREVIEW --- */
+        /* Preview */
         .preview-box { background: #e9ecef; min-height: 250px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
         .preview-img { width: 100%; height: auto; display: block; }
         
-        /* --- ICONS (UPSIZED) --- */
+        /* Icons (Right Side) */
         .icon-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; }
+        .icon-wrapper { text-align: center; width: 110px; display: flex; flex-direction: column; align-items: center; }
+        .icon-item { width: 100px; height: 100px; object-fit: contain; background: #fff; border: 1px solid #e0e0e0; padding: 8px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .icon-label { font-size: 13px; color: #333; margin-top: 6px; line-height: 1.3; white-space: normal; word-wrap: break-word; }
         
-        .icon-wrapper { 
-            text-align: center; 
-            width: 110px; /* Width of the whole item (icon + text) */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        /* --- NEW TABS STYLES (Left Side) --- */
+        .tabs-wrapper { margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .tab-header { display: flex; gap: 10px; margin-bottom: 10px; }
+        .tab-btn { background: #eee; color: #555; padding: 8px 16px; border-radius: 6px; border: none; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+        .tab-btn.active { background: var(--primary); color: white; }
         
-        .icon-item { 
-            width: 100px;   /* NEW SIZE: 100px */
-            height: 100px;  /* NEW SIZE: 100px */
-            object-fit: contain; 
-            background: #fff; 
-            border: 1px solid #e0e0e0; 
-            padding: 8px; 
-            border-radius: 12px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .icon-label { 
-            font-size: 13px; /* Larger text */
-            color: #333; 
-            margin-top: 6px; 
-            line-height: 1.3;
-            /* Allow text to wrap naturally instead of cutting off */
-            white-space: normal; 
-            word-wrap: break-word;
-        }
-        
-        /* --- BUTTONS --- */
+        .tab-content { display: none; overflow-y: auto; background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; padding: 10px; height: 300px; /* Scrollable height */ }
+        .tab-content.active { display: block; }
+
+        .ref-item { display: flex; align-items: center; padding: 6px; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; }
+        .ref-item:hover { background: #f0f8ff; }
+        .ref-item:active { background: #d0e8ff; }
+        .ref-icon { width: 30px; height: 30px; object-fit: contain; margin-right: 10px; border-radius: 4px; border: 1px solid #ddd; background: white; }
+        .ref-text { font-size: 13px; color: #333; font-weight: 500; }
+        .ref-copy-hint { margin-left: auto; font-size: 10px; color: #aaa; text-transform: uppercase; }
+
+        /* Buttons */
         button { cursor: pointer; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: #0056b3; }
         .btn-save { background: #28a745; color: white; width: 100%; margin-top: 25px; font-size: 1.1rem; padding: 15px; }
         .btn-save:hover { background: #218838; }
         .btn-save:disabled { background: #94d3a2; cursor: not-allowed; }
 
-        /* --- SETTINGS --- */
+        /* Settings Overlay */
         #settings-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
         .settings-box { background: white; padding: 40px; border-radius: 16px; width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        
+        /* Toast Notification */
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 1; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
 <body>
+
+<div id="toast">Copied to clipboard!</div>
 
 <div id="settings-overlay">
     <div class="settings-box">
         <h3 style="margin-top:0; font-size: 1.5rem;">🔐 Authorization</h3>
         <p style="font-size:1rem; color:#666; margin-bottom:20px">Please enter your GitHub access details.</p>
-        
-        <label>GitHub Username</label> <input type="text" id="gh-username" placeholder="e.g. shanky">
-        <label>Repository Name</label> <input type="text" id="gh-repo" placeholder="e.g. TakatExercises">
-        <label>Fine-grained Token</label> <input type="password" id="gh-token" placeholder="github_pat_...">
-        
+        <label>GitHub Username</label> <input type="text" id="gh-username">
+        <label>Repository Name</label> <input type="text" id="gh-repo">
+        <label>Fine-grained Token</label> <input type="password" id="gh-token">
         <button class="btn-primary" style="width:100%; margin-top:25px; padding: 15px;" onclick="saveSettings()">Access Database</button>
     </div>
 </div>
@@ -102,10 +100,20 @@
             <div class="col"><label>Primary Muscles</label><textarea id="primary_muscles" style="height: 80px"></textarea></div>
         </div>
         <label>Secondary Muscles</label> <input type="text" id="secondary_muscles">
-        <label>Steps</label> <textarea id="steps" style="height: 200px"></textarea>
+        <label>Steps</label> <textarea id="steps" style="height: 150px"></textarea>
 
         <button class="btn-save" id="save-btn" onclick="saveToGitHub()">💾 Save Changes</button>
         <p id="status-msg" style="text-align: center; margin-top: 15px; font-weight: bold; min-height: 20px;"></p>
+
+        <div class="tabs-wrapper">
+            <div style="font-size:0.8rem; font-weight:bold; color:#888; margin-bottom:10px;">REFERENCE LIBRARY (Click item to copy)</div>
+            <div class="tab-header">
+                <button class="tab-btn active" onclick="openTab('tab-eq')">All Equipments</button>
+                <button class="tab-btn" onclick="openTab('tab-mu')">All Muscles</button>
+            </div>
+            <div id="tab-eq" class="tab-content active"></div>
+            <div id="tab-mu" class="tab-content"></div>
+        </div>
     </div>
 
     <div class="card" style="height: fit-content;">
@@ -201,6 +209,9 @@
         const r = localStorage.getItem('gh_repo');
         const t = localStorage.getItem('gh_token');
         if(u && r && t) { document.getElementById('settings-overlay').style.display = 'none'; loadData(); }
+        
+        // Render Reference Tabs immediately
+        renderRefTabs();
     }
 
     function saveSettings() {
@@ -221,12 +232,60 @@
         } catch (e) { alert("Could not load data."); }
     }
 
+    // --- TAB LOGIC ---
+    function openTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function renderRefTabs() {
+        const createList = (containerId, mapping, folder) => {
+            const container = document.getElementById(containerId);
+            // Sort keys alphabetically
+            const keys = Object.keys(mapping).sort();
+            
+            keys.forEach(key => {
+                const item = document.createElement('div');
+                item.className = 'ref-item';
+                item.onclick = () => {
+                    navigator.clipboard.writeText(key);
+                    const t = document.getElementById("toast");
+                    t.innerText = `Copied: ${key}`;
+                    t.className = "show";
+                    setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+                };
+
+                const img = document.createElement('img');
+                img.src = `assets/${folder}/${mapping[key]}`;
+                img.className = 'ref-icon';
+                
+                const txt = document.createElement('div');
+                txt.className = 'ref-text';
+                txt.innerText = key;
+                
+                const hint = document.createElement('div');
+                hint.className = 'ref-copy-hint';
+                hint.innerText = "COPY";
+
+                item.appendChild(img);
+                item.appendChild(txt);
+                item.appendChild(hint);
+                container.appendChild(item);
+            });
+        };
+
+        createList('tab-eq', equipments_mapping, 'equipments');
+        createList('tab-mu', muscles_mapping, 'muscles');
+    }
+
     function render() {
         if(!data.length) return;
         const record = data[currentIndex];
         document.getElementById('record-title').innerText = `${currentIndex + 1} / ${data.length} : ${record.name}`;
         
-        // Fields
         ['id', 'code', 'name', 'description'].forEach(k => document.getElementById(k).value = record[k] || '');
         const listStr = (k) => (record[k] || []).join(', ');
         document.getElementById('equipments').value = listStr('equipments_required');
@@ -234,7 +293,7 @@
         document.getElementById('secondary_muscles').value = listStr('secondary_muscle_groups');
         document.getElementById('steps').value = (record.steps || []).join('\n');
 
-        // --- IMAGE LOGIC (Merged Path) ---
+        // --- IMAGE LOGIC ---
         const container = document.getElementById('image-container');
         const pathDebug = document.getElementById('img-path-debug');
         const rawPath = record.csv_image_paths?.['360_path'];
@@ -242,16 +301,11 @@
         if (rawPath) {
             const parts = rawPath.split('/merged/');
             if (parts.length > 1) {
-                const relativePath = parts[1];
-                const webPath = `assets/images/merged/${relativePath}`;
-                container.innerHTML = `<img src="${webPath}" class="preview-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\'color:red; font-size:12px\'>File not found: ${webPath}</span>'">`;
+                const webPath = `assets/images/merged/${parts[1]}`;
+                container.innerHTML = `<img src="${webPath}" class="preview-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\'color:red\'>File not found: ${webPath}</span>'">`;
                 pathDebug.innerText = webPath;
-            } else {
-                container.innerHTML = '<span style="color:orange">Path missing "/merged/"</span>';
-            }
-        } else {
-            container.innerHTML = '<span style="color:#999; font-size:12px">No 360_path found</span>';
-        }
+            } else { container.innerHTML = '<span style="color:orange">Path missing "/merged/"</span>'; }
+        } else { container.innerHTML = '<span style="color:#999">No 360_path found</span>'; }
 
         // --- ICONS LOGIC ---
         renderIcons('equip-icons', record.equipments_required, equipments_mapping, 'equipments');
@@ -262,28 +316,24 @@
         const container = document.getElementById(containerId);
         container.innerHTML = '';
         if (!items) return;
-
         items.forEach(item => {
             const cleanName = item.trim();
             const fileName = mapping[cleanName];
-            
             const wrapper = document.createElement('div');
             wrapper.className = 'icon-wrapper';
-            
             if (fileName) {
                 const img = document.createElement('img');
                 img.src = `assets/${folder}/${fileName}`; 
                 img.className = 'icon-item';
-                img.onerror = () => { img.style.opacity = '0.3'; }; // Dim if missing
+                img.onerror = () => { img.style.opacity = '0.3'; };
                 wrapper.appendChild(img);
             } else {
                 const placeholder = document.createElement('div');
                 placeholder.className = 'icon-item';
-                placeholder.style.display = 'flex'; placeholder.style.alignItems='center'; placeholder.style.justifyContent='center';
                 placeholder.innerText = '?';
+                placeholder.style.display='flex'; placeholder.style.alignItems='center'; placeholder.style.justifyContent='center';
                 wrapper.appendChild(placeholder);
             }
-
             const label = document.createElement('div');
             label.className = 'icon-label';
             label.innerText = cleanName;
@@ -305,104 +355,51 @@
         const btn = document.getElementById('save-btn');
         const msg = document.getElementById('status-msg');
         
-        // --- 1. PREPARE THE DATA ---
-        // We take the existing record from memory. 
-        // This ensures hidden fields (like images/similar_exercises) remain untouched.
         const rec = data[currentIndex]; 
-        
-        // We only overwrite the fields available in the UI
         rec.name = document.getElementById('name').value;
         rec.description = document.getElementById('description').value;
+        const list = (id) => document.getElementById(id).value.split(',').map(s=>s.trim()).filter(s=>s.length > 0);
         
-        // Helper to convert comma-text back to array
-        const list = (id) => document.getElementById(id).value
-            .split(',')
-            .map(s=>s.trim())
-            .filter(s=>s.length > 0);
-            
         rec.equipments_required = list('equipments');
         rec.primary_muscle_groups = list('primary_muscles');
-        rec.secondary_muscle_groups = list('secondary_muscle_groups');
-        
-        // Helper for steps (new lines)
-        rec.steps = document.getElementById('steps').value
-            .split('\n')
-            .map(s=>s.trim())
-            .filter(s=>s.length > 0);
+        rec.secondary_muscle_groups = list('secondary_muscles'); // Fixed ID
+        rec.steps = document.getElementById('steps').value.split('\n').map(s=>s.trim()).filter(s=>s.length > 0);
 
-        // --- 2. PREPARE THE NETWORK REQUEST ---
         const user = localStorage.getItem('gh_username');
         const repo = localStorage.getItem('gh_repo');
         const token = localStorage.getItem('gh_token');
 
-        if (!user || !repo || !token) {
-            alert("❌ Settings Missing! Please refresh and enter your GitHub details.");
-            return;
-        }
+        if (!user || !repo || !token) { alert("❌ Settings Missing"); return; }
 
-        // Clean strings to prevent errors
-        const cleanUser = user.trim();
-        const cleanRepo = repo.trim();
-        const cleanPath = JSON_PATH.trim(); // 'aggregated_output.json'
-
-        // API Endpoint
-        const baseUrl = `https://api.github.com/repos/${cleanUser}/${cleanRepo}/contents/${cleanPath}`;
-
-        btn.disabled = true;
-        btn.innerText = "Connecting...";
-        msg.innerText = "Connecting...";
+        const baseUrl = `https://api.github.com/repos/${user.trim()}/${repo.trim()}/contents/${JSON_PATH.trim()}`;
+        btn.disabled = true; btn.innerText = "Connecting..."; msg.innerText = "Connecting...";
 
         try {
-            // --- 3. GET CURRENT FILE SHA (Cache Busted) ---
-            // We add ?t=time to force the browser to get the REAL latest version from GitHub
             const getRes = await fetch(`${baseUrl}?t=${new Date().getTime()}`, { 
-                headers: { 
-                    Authorization: `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                } 
+                headers: { Authorization: `token ${token}` } 
             });
-
-            if (getRes.status === 404) throw new Error("File not found! Check your Repo Name or File Path.");
-            if (getRes.status === 401) throw new Error("Token Invalid! Please generate a new Fine-grained Token.");
+            if (getRes.status === 404) throw new Error("File not found");
+            if (getRes.status === 401) throw new Error("Token Invalid");
             if (!getRes.ok) throw new Error(`Connection Error: ${getRes.status}`);
-
             const getJson = await getRes.json();
-            const currentSha = getJson.sha;
-
-            // --- 4. UPLOAD UPDATE ---
-            btn.innerText = "Uploading...";
             
-            // Encode JSON to Base64 (Standard requirement for GitHub API)
+            btn.innerText = "Uploading...";
             const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
             
             const putRes = await fetch(baseUrl, {
                 method: 'PUT',
-                headers: { 
-                    Authorization: `token ${token}`, 
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({
-                    message: `Update ${rec.name}`, // Commit message
-                    content: content,
-                    sha: currentSha
-                })
+                headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: `Update ${rec.name}`, content: content, sha: getJson.sha })
             });
 
-            if (putRes.status === 403) throw new Error("Permission Denied! Your token is Read-Only. You need 'Write' permissions.");
+            if (putRes.status === 403) throw new Error("Permission Denied (Read-Only Token)");
             if (!putRes.ok) throw new Error(`Upload Failed: ${putRes.status}`);
 
-            msg.innerText = "✅ Saved Successfully!";
-            msg.style.color = "green";
-            // alert("Saved!"); // Optional: Uncomment if you want a popup
-
+            msg.innerText = "✅ Saved Successfully!"; msg.style.color = "green";
         } catch (e) {
-            console.error(e);
-            msg.innerText = "❌ " + e.message;
-            msg.style.color = "red";
-            alert(e.message); // Show the error in a popup so you can read it
+            console.error(e); msg.innerText = "❌ " + e.message; msg.style.color = "red"; alert(e.message);
         } finally {
-            btn.disabled = false;
-            btn.innerText = "💾 Save Changes";
+            btn.disabled = false; btn.innerText = "💾 Save Changes";
         }
     }
 
