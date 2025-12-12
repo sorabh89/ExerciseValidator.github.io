@@ -8,34 +8,28 @@
         :root { --primary: #007bff; --bg: #f8f9fa; --surface: #ffffff; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); padding: 20px; max-width: 1400px; margin: 0 auto; }
         
-        /* Layout */
-        .grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 450px; gap: 20px; }
         .card { background: var(--surface); padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        
-        /* Controls */
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         h2 { margin: 0; font-size: 1.2rem; color: #333; }
         
-        /* Inputs */
         label { display: block; font-size: 0.85rem; font-weight: 600; color: #666; margin-top: 10px; margin-bottom: 4px; }
         input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
-        textarea { resize: vertical; min-height: 80px; }
         .row { display: flex; gap: 10px; }
         .col { flex: 1; }
 
-        /* Images & Preview */
-        .preview-img { width: 100%; border-radius: 8px; border: 1px solid #eee; }
-        .icon-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
-        .icon-item { width: 50px; height: 50px; object-fit: contain; background: #fff; border: 1px solid #eee; padding: 4px; border-radius: 4px; }
+        .preview-box { background: #eee; min-height: 250px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
+        .preview-img { width: 100%; height: auto; display: block; }
         
-        /* Buttons */
-        button { cursor: pointer; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; transition: 0.2s; }
+        .icon-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px; }
+        .icon-wrapper { text-align: center; width: 60px; }
+        .icon-item { width: 50px; height: 50px; object-fit: contain; background: #fff; border: 1px solid #eee; padding: 5px; border-radius: 8px; }
+        .icon-label { font-size: 10px; color: #555; margin-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        
+        button { cursor: pointer; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:disabled { background: #ccc; }
         .btn-save { background: #28a745; color: white; width: 100%; margin-top: 20px; font-size: 1rem; padding: 12px; }
-        .btn-save:hover { background: #218838; }
-
-        /* Settings Overlay */
+        
         #settings-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .settings-box { background: white; padding: 30px; border-radius: 12px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
     </style>
@@ -45,17 +39,10 @@
 <div id="settings-overlay">
     <div class="settings-box">
         <h3 style="margin-top:0">🔐 Authorization Required</h3>
-        <p style="font-size:0.9rem; color:#666; margin-bottom:15px">Enter your details to edit the database.</p>
-        
-        <label>GitHub Username</label>
-        <input type="text" id="gh-username" placeholder="e.g. shanky">
-        
-        <label>Repository Name</label>
-        <input type="text" id="gh-repo" placeholder="e.g. TakatExercises">
-        
-        <label>Fine-grained Token</label>
-        <input type="password" id="gh-token" placeholder="github_pat_...">
-        
+        <p style="font-size:0.9rem; color:#666; margin-bottom:15px">Enter your GitHub details.</p>
+        <label>GitHub Username</label> <input type="text" id="gh-username">
+        <label>Repository Name</label> <input type="text" id="gh-repo">
+        <label>Fine-grained Token</label> <input type="password" id="gh-token">
         <button class="btn-primary" style="width:100%; margin-top:20px" onclick="saveSettings()">Access Database</button>
     </div>
 </div>
@@ -72,36 +59,26 @@
             <div class="col"><label>ID</label><input type="text" id="id"></div>
             <div class="col"><label>Code</label><input type="text" id="code"></div>
         </div>
+        <label>Name</label> <input type="text" id="name">
+        <label>Description</label> <textarea id="description" style="height: 100px"></textarea>
         
-        <label>Name</label>
-        <input type="text" id="name">
-        
-        <label>Description</label>
-        <textarea id="description" style="height: 120px"></textarea>
-        
-        <label>Equipments (Comma separated)</label>
-        <input type="text" id="equipments">
-        
-        <label>Primary Muscles (Comma separated)</label>
-        <input type="text" id="primary_muscles">
-
-        <label>Secondary Muscles (Comma separated)</label>
-        <input type="text" id="secondary_muscles">
-        
-        <label>Steps (One per line)</label>
-        <textarea id="steps" style="height: 200px"></textarea>
+        <div class="row">
+            <div class="col"><label>Equipments</label><textarea id="equipments" style="height: 60px"></textarea></div>
+            <div class="col"><label>Primary Muscles</label><textarea id="primary_muscles" style="height: 60px"></textarea></div>
+        </div>
+        <label>Secondary Muscles</label> <input type="text" id="secondary_muscles">
+        <label>Steps</label> <textarea id="steps" style="height: 150px"></textarea>
 
         <button class="btn-save" id="save-btn" onclick="saveToGitHub()">💾 Save Changes</button>
-        <p id="status-msg" style="text-align: center; margin-top: 10px; font-weight: bold; min-height: 20px;"></p>
+        <p id="status-msg" style="text-align: center; margin-top: 10px; font-weight: bold;"></p>
     </div>
 
     <div class="card" style="height: fit-content;">
-        <label>Visual Preview</label>
-        <div id="image-container" style="margin-bottom: 20px; background: #eee; min-height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-            <span style="color:#888">No Image</span>
-        </div>
+        <label>Exercise Preview (Merged 180)</label>
+        <div id="image-container" class="preview-box"></div>
+        <div style="text-align: center; font-size: 0.8rem; color: #888;" id="img-path-debug"></div>
 
-        <label>Equipments Required</label>
+        <label>Equipments</label>
         <div id="equip-icons" class="icon-grid"></div>
 
         <label>Primary Muscles</label>
@@ -110,26 +87,84 @@
 </div>
 
 <script>
-    // --- MAPPINGS (From your python files) ---
-    // You must fill these out manually or paste your dictionaries here 
-    // to map strings like "dumbbell" to "dumbbell.png"
-    // For now, I assume the filename matches the equipment name + .png
-    // If not, you need to paste your Python dictionary here in JS format.
-    
-    // --- STATE ---
+    // --- MAPPINGS ---
+    const muscles_mapping = {
+        'Pectoralis Major': 'pectoralis_major.png', 'Deltoids': 'deltoids.png', 'Biceps Brachii': 'biceps_brachii.png',
+        'Triceps Brachii': 'triceps_brachii.png', 'Latissimus Dorsi': 'latissimus_dorsi.png', 'Gluteus Maximus': 'gluteus_maximus.png',
+        'Quadriceps': 'quadriceps.png', 'Hamstrings': 'hamstrings.png', 'Rectus Abdominis': 'rectus_abdominis.png',
+        'Serratus Anterior': 'serratus_anterior.png', 'Trapezius': 'trapezius.png', 'Erector Spinae': 'erector_spinae.png',
+        'Forearm Extensors': 'wrist_extensors.png', 'Forearm Flexors': 'wrist_flexors.png', 'Adductors': 'adductors.png',
+        'Calves': 'calves.png', 'Obliques': 'obliques.png', 'Hip Flexors': 'hip_flexors.png', 'Rhomboids': 'rhomboids.png',
+        'Infraspinatus': 'infraspinatus.png', 'Gluteus Medius': 'gluteus_medius.png', 'Tensor Fasciae Latae': 'tensor_fasciae_latae.png',
+        'Tibialis Anterior': 'tibialis_anterior.png', 'Brachialis': 'brachialis.png', 'Teres Major': 'teres_major.png',
+        'Brachioradialis': 'brachioradialis.png', 'Ankle Stabilizers': 'ankle_stabilizers.png', 'Teres Minor': 'teres_minor.png',
+        'Supraspinatus': 'supraspinatus.png', 'Sternocleidomastoid': 'sternocleidomastoid.png', 'Scalenes': 'scalenes.png',
+        'Levator Scapulae': 'levator_scapulae.png', 'Transverse Abdominis': 'transverse_abdominis.png', 'Piriformis': 'piriformis.png',
+        'Quadratus Lumborum': 'quadratus_lumborum.png', 'Deep Neck Flexors': 'deep_neck_flexors.png', 'Suprahyoid': 'suprahyoid.png',
+        'Intercostals': 'intercostals.png', 'Splenius Muscles': 'splenius_muscles.png', 'Semispinalis Capitis': 'semispinalis_capitis.jpeg',
+        'Soleus': 'soleus.png', 'Peroneals': 'peroneals.png', 'Tibialis Posterior': 'tibialis_posterior.jpeg', 'Subscapularis': 'subscapularis.png',
+        'Gluteus Minimus': 'gluteus_minimus.png', 'Iliopsoas': 'iliopsoas.png', 'Pronator Teres': 'pronator_teres.png',
+        'Pronator Quadratus': 'pronator_quadratus.jpeg', 'Supinator': 'supinator.png', 'Plantar Fascia': 'plantar_fascia.png',
+        'Intrinsic Foot Muscles': 'intrinsic_foot_muscles.png', 'Thenar Muscles': 'thenar_muscles.jpeg', 'Intrinsic Hand Muscles': 'intrinsic_hand_muscles.jpg',
+        'Sartorius': 'sartorius.png', 'Pectoralis Minor': 'pectoralis_minor.png', 'Diaphragm': 'diaphragm.jpg', 'Foot Extensors': 'foot_extensors.png',
+        'Popliteus': 'popliteus', 'Pectineus': 'pectineous.png'
+    };
+
+    const equipments_mapping = {
+        'Bodyweight': 'bodyweight.png', 'Wall': 'wall.png', 'Partner': 'partner.png', 'Dumbbells': 'dumbbells.png',
+        'Bosu Ball': 'bosu_ball.png', 'Kettlebell': 'kettlebell.png', 'Barbell': 'barbell.png',
+        'Triceps Press Down Rope Double Grip': 'triceps_press_down_rope_double_grip.png', 'Single Column Pulley Cable Machine': 'cable_pulley_tower.png',
+        '20 Inch Revolving Straight Bar': '20inch_revolving_straight_bar.png', '24 Inch Pro Style Revolving Lat Bar': '24inch_pro_style_revolving_lat_bar.png',
+        '28 Inch Revolving Curl Bar': '28inch_revolving_curl_bar.png', '34 Inch Pro Style Revolving Lat Bar': '34inch_pro_style_revolving_lat_bar.png',
+        '36 Inch Revolving Lat Bar': '36inch_revolving_lat_bar.png', '48 Inch Revolving Lat Bar': '48inch_revolving_lat_bar.png',
+        'Ab Coaster': 'ab_coaster.png', 'Ab Crunch Machine': 'ab_crunch_machine.png', 'Ab Roller': 'ab_roller.png',
+        'Abdominal Bench': 'abdominal_bench.png', 'Abdominal Seated Crunch Machine': 'abdominal_seated_crunch_machine.png', 'Adjustable Bench': 'adjustable_bench.png',
+        'Aerobic Platform': 'aerobic_platform.png', 'Agility Ladder': 'agility_ladder.png', 'Air Bike': 'air_bike.png', 'Ankle Strap': 'ankle_strap.png',
+        'Ankle Weights': 'ankle_weights.png', 'Arm Extension Machine': 'arm_extension_machine.png', 'Assisted Dip Machine': 'assisted_dip_machine.png',
+        'Barbell Pad': 'barbell_pad.png', 'Battle Ropes': 'battle_ropes.png', 'Bench Press': 'bench_press.png', 'Flat Bench': 'bench.png', 'Blocks': 'blocks.png',
+        'Bosu Ball With Handles': 'bosu_ball_with_handles.png', 'Cable Crossover Machine': 'cable_crossover_machine.png', 'Captains Chair': 'captains_chair.png',
+        'Chair': 'chair.png', 'Chest Fly Machine': 'chest_fly_machine.png', 'Climbing Rope': 'climbing_rope.png', 'Cones': 'cones.png',
+        'Decline Bench Press': 'decline_bench_press.png', 'Decline Bench': 'decline_bench.png', 'Deluxe Stirrup Handle': 'deluxe_stirrup_handle.png',
+        'Dip Bars': 'dip_bars.png', 'Dip Station': 'dip_station.png', 'Dragging Sled': 'dragging_sled.png', 'Dual Cable Machine': 'dual_cable_machine.png',
+        'Elliptical Trainer': 'elliptical_trainer.png', 'Exercise Mat': 'exercise_mat.png', 'EZ Curl Bar': 'ez_curl_bar.png', 'Front Pull Down Machine': 'front_pull_down_machine.png',
+        'Functional Trainer': 'functional_trainer.png', 'Glute Ham Developer': 'glute_ham_developer.png', 'Glute Kick-back Machine': 'glute_kick_back_machine.png',
+        'Gymnastic Rings': 'gymnastic_rings.png', 'Hack Squat Machine': 'hack_squat_machine.png', 'Head Harness': 'head_harness.png',
+        'Hip Abductor Adductor': 'hip_abductor_adductor.png', 'Hyperextension Roman Chair': 'hyperextension_roman_chair.png', 'Incline Bench Press': 'incline_bench_press.png',
+        'Incline Pectoral Fly': 'incline_pectoral_fly.png', 'Indoor Bike': 'indoor_bike.png', 'Jump Rope': 'jump_rope.png', 'Kneeling Leg Curl Machine': 'kneeling_leg_curl_machine.png',
+        'Lat Pull Down Machine': 'lat_pull_down_machine.png', 'Lateral Raise': 'lateral_raise.png', 'Leg Curl Machine': 'leg_curl_machine.png',
+        'Leg Extension Machine': 'leg_extension_machine.png', 'Leg Press': 'leg_press.png', 'Leg Raise Pullup Dip Tower': 'leg_raise_pullup_dip_tower.png',
+        'Lever Deadlift Machine': 'lever_deadlift_machine.png', 'Lever Front Pulldown Machine': 'lever_front_pulldown_machine.png', 'Lever Preacher Curl Machine': 'lever_preacher_curl_machine.png',
+        'Low Seated Row Machine': 'low_seated_row_machine.png', 'Lying Chest Press': 'lying_chest_press.png', 'Lying Leg Curl Machine': 'lying_leg_curl_machine.png',
+        'Medicine Ball': 'medicine_ball.png', 'Mini Trampoline': 'mini_trampoline.png', 'Multi Exercise Bar': 'multi_exercise_bar.png', 'Multi Purpose V Bar': 'multi_purpose_v_bar.png',
+        'Olympic Decline Bench': 'olympic_decline_bench.png', 'Olympic Flat Bench': 'olympic_flat_bench.png', 'Parallel Chest Press': 'parallel_chest_press.png',
+        'Plate Loaded Shoulder Press': 'plate_loaded_shoulder_press.png', 'Plyo Box': 'plyo_box.png', 'Power Rack': 'power_rack.png', 'Preacher Curl Bench': 'preacher_curl_bench.png',
+        'Pull-up Bar': 'pull_up_bar.png', 'Recumbent Exercise Bike': 'recumbent_exercise_bike.png', 'Resistance Band With Handles': 'resistance_band_with_handles.png',
+        'Resistance Band': 'resistance_band.png', 'Reverse Hyper Machine': 'reverse_hyper_machine.png', 'Rotary Torso Machine': 'rotary_torso_machine.png',
+        'Rowing Machine': 'rowing_machine.png', 'Seated Calf Raise': 'seated_calf_raise.png', 'Seated Dip Machine': 'seated_dip_machine.png',
+        'Seated Row Chinning Bar': 'seated_row_chinning_bar.png', 'Selectorised Recumbent Leg Press': 'selectorised_recumbent_leg_press.png', 'Shoulder Press': 'shoulder_press.png',
+        'Sliders': 'sliders.png', 'Smith Machine': 'smith_machine.png', 'Stability Ball': 'stability_ball.png', 'Standing Calf Machine': 'standing_calf_machine.png',
+        'Standing Chest Press': 'standing_chest_press.png', 'Suspension Trainers': 'suspension_trainers.png', 'T-bar Row Machine': 't_bar_row_machine.png',
+        'Trap Bar': 'trap_bar.png', 'Treadmill': 'treadmill.png', 'Triceps Bar': 'triceps_bar.png', 'Triceps Full Extension Bar': 'triceps_full_extension_bar.png',
+        'Triceps Hammer Rope Single Grip': 'triceps_hammer_rope_single_grip.png', 'Triceps Press Down Bar': 'triceps_press_down_bar.png', 'Triceps Press Machine': 'triceps_press_machine.png',
+        'Twist Disk Machine': 'twist_disk_machine.png', 'Under Desk Pedal': 'under_desk_pedal.png', 'Weight Plates': 'weight_plates.png', 'Hula Hoop': 'hula_hoop.png',
+        'Sissy Squat Machine': 'sissy_squat_machine.png', 'Plate-Loaded High Row Machine': 'plate_loaded_high_row_machine.png', 'Rocker Board': 'rocker_board.png',
+        'Massage Ball': 'massage_ball.png', 'Ab Pad': 'ab_pad.png', 'Towel': 'towel.png', 'Therapy Table': 'therapy_table.png',
+        'Plate-Loaded Incline Chest Press Machine': 'plate_loaded_incline_chest_press_machine.png', 'Parallel Grip Lat Pulldown Bar': 'parallel_grip_lat_pulldown_bar.png',
+        'Power Twister': 'power_twister.png', 'Vertical Climbing Ladder': 'vertical_climbing_ladder.png', 'Lever Decline Chest Press Machine': 'lever_decline_chest_press_machine.png',
+        'Seated Converging Chest Press Machine': 'seated_converging_chest_press_machine.png', 'Lever Chair Squat Machine': 'lever_chair_squat_machine.png',
+        'Standing Glute Kick-back Machine': 'standing_glute_kickback_machine.png', 'Tib Bar': 'tib_bar.png', 'Lever Bent-over Row Machine': 'lever_bent_over_row_machine.png',
+        'Landmine': 'landmine.png', 'Stick': 'stick.png', 'Triceps Extension Machine': 'tricep_extension_machine.png', 'Power Squat Machine': 'power_squat_machine.png'
+    };
+
     let data = [];
     let currentIndex = 0;
-    const JSON_PATH = 'aggregated_output.json'; // File at root of repo
+    const JSON_PATH = 'aggregated_output.json'; 
 
-    // --- INIT ---
     function checkAuth() {
         const u = localStorage.getItem('gh_username');
         const r = localStorage.getItem('gh_repo');
         const t = localStorage.getItem('gh_token');
-        if(u && r && t) {
-            document.getElementById('settings-overlay').style.display = 'none';
-            loadData();
-        }
+        if(u && r && t) { document.getElementById('settings-overlay').style.display = 'none'; loadData(); }
     }
 
     function saveSettings() {
@@ -142,76 +177,95 @@
     async function loadData() {
         try {
             const res = await fetch(JSON_PATH);
-            if(!res.ok) throw new Error("Failed to load JSON file");
+            if(!res.ok) throw new Error("Failed to load JSON");
             data = await res.json();
-            
             const savedIndex = localStorage.getItem('current_index');
             currentIndex = savedIndex ? parseInt(savedIndex) : 0;
             render();
-        } catch (e) {
-            alert("Error loading data. Ensure aggregated_output.json is in the repo root.");
-        }
+        } catch (e) { alert("Could not load data."); }
     }
 
-    // --- RENDER LOGIC ---
     function render() {
         if(!data.length) return;
         const record = data[currentIndex];
-        
         document.getElementById('record-title').innerText = `${currentIndex + 1} / ${data.length} : ${record.name}`;
         
-        // Fill Inputs
-        ['id', 'code', 'name', 'description'].forEach(key => {
-            document.getElementById(key).value = record[key] || '';
-        });
-        
-        // Handle Lists -> Strings
-        const listToString = (key) => (record[key] || []).join(', ');
-        document.getElementById('equipments').value = listToString('equipments_required');
-        document.getElementById('primary_muscles').value = listToString('primary_muscle_groups');
-        document.getElementById('secondary_muscles').value = listToString('secondary_muscle_groups');
+        // Fields
+        ['id', 'code', 'name', 'description'].forEach(k => document.getElementById(k).value = record[k] || '');
+        const listStr = (k) => (record[k] || []).join(', ');
+        document.getElementById('equipments').value = listStr('equipments_required');
+        document.getElementById('primary_muscles').value = listStr('primary_muscle_groups');
+        document.getElementById('secondary_muscles').value = listStr('secondary_muscle_groups');
         document.getElementById('steps').value = (record.steps || []).join('\n');
 
-        // --- IMAGE HANDLING (The Logic Fix) ---
-        const imgContainer = document.getElementById('image-container');
-        let imgPath = record.csv_image_paths?.['720_path'] || record.webp_image_paths?.['720_path'];
+        // --- IMAGE LOGIC (Specific for Merged Path) ---
+        const container = document.getElementById('image-container');
+        const pathDebug = document.getElementById('img-path-debug');
         
-        if (imgPath) {
-            // Extract filename from the messy local path
-            // e.g., "/Users/shanky/.../burpee.gif" -> "burpee.gif"
-            const fileName = imgPath.split(/[/\\]/).pop(); 
-            imgContainer.innerHTML = `<img src="assets/images/${fileName}" class="preview-img" onerror="this.style.display='none'; this.parentElement.innerText='Image not found in assets/images/'">`;
+        // 1. Target the 180_path specifically
+        const rawPath = record.csv_image_paths?.['180_path'];
+
+        if (rawPath) {
+            // Raw: /Users/.../gym/gifs/merged/6/66951301/file.gif
+            // We want everything AFTER "/merged/"
+            // Split by "merged/" and take the second part
+            const parts = rawPath.split('/merged/');
+            
+            if (parts.length > 1) {
+                // Result: 6/66951301/file.gif
+                const relativePath = parts[1];
+                const webPath = `assets/images/merged/${relativePath}`;
+                
+                container.innerHTML = `<img src="${webPath}" class="preview-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\'color:red\'>File not found: ${webPath}</span>'">`;
+                pathDebug.innerText = webPath;
+            } else {
+                container.innerHTML = '<span style="color:orange">Path does not contain "merged" folder structure</span>';
+            }
         } else {
-            imgContainer.innerHTML = '<span style="color:#888">No Image path in JSON</span>';
+            container.innerHTML = '<span style="color:#888">No csv_image_paths["180_path"] found</span>';
         }
 
-        // --- ICONS HANDLING ---
-        // Helper to render icons
-        const renderIcons = (containerId, items, folder) => {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            (items || []).forEach(item => {
-                // Assuming Mapping: item name "Dumbbell" -> file "Dumbbell.png"
-                // If your mapping is complex, we need that dictionary here. 
-                // For now, trying direct name match + .png
-                const cleanName = item.trim();
-                // Note: File names are case sensitive in GitHub Pages!
-                const iconPath = `assets/${folder}/${cleanName}.png`; 
-                
-                const img = document.createElement('img');
-                img.src = iconPath;
-                img.className = 'icon-item';
-                img.title = cleanName;
-                img.onerror = () => { img.style.display = 'none'; }; // Hide if not found
-                container.appendChild(img);
-            });
-        };
-
-        renderIcons('equip-icons', record.equipments_required, 'equipments');
-        renderIcons('muscle-icons', record.primary_muscle_groups, 'muscles');
+        // --- ICONS LOGIC (Using Mappings) ---
+        renderIcons('equip-icons', record.equipments_required, equipments_mapping, 'equipments');
+        renderIcons('muscle-icons', record.primary_muscle_groups, muscles_mapping, 'muscles');
     }
 
-    // --- ACTIONS ---
+    function renderIcons(containerId, items, mapping, folder) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        if (!items) return;
+
+        items.forEach(item => {
+            const cleanName = item.trim();
+            // LOOKUP IN MAPPING
+            const fileName = mapping[cleanName];
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'icon-wrapper';
+            
+            if (fileName) {
+                const img = document.createElement('img');
+                img.src = `assets/${folder}/${fileName}`; 
+                img.className = 'icon-item';
+                img.onerror = () => { img.style.opacity = '0.3'; }; // Dim if missing
+                wrapper.appendChild(img);
+            } else {
+                // If mapping not found, show a '?' placeholder
+                const placeholder = document.createElement('div');
+                placeholder.className = 'icon-item';
+                placeholder.style.display = 'flex'; placeholder.style.alignItems='center'; placeholder.style.justifyContent='center';
+                placeholder.innerText = '?';
+                wrapper.appendChild(placeholder);
+            }
+
+            const label = document.createElement('div');
+            label.className = 'icon-label';
+            label.innerText = cleanName;
+            wrapper.appendChild(label);
+            container.appendChild(wrapper);
+        });
+    }
+
     function changeRecord(dir) {
         const newIdx = currentIndex + dir;
         if(newIdx >= 0 && newIdx < data.length) {
@@ -224,64 +278,42 @@
     async function saveToGitHub() {
         const btn = document.getElementById('save-btn');
         const msg = document.getElementById('status-msg');
-        
         btn.disabled = true;
         btn.innerText = "Saving...";
         msg.innerText = "";
 
-        // 1. Update Memory Object
         const rec = data[currentIndex];
-        rec.id = document.getElementById('id').value;
-        rec.code = document.getElementById('code').value;
         rec.name = document.getElementById('name').value;
         rec.description = document.getElementById('description').value;
-        
-        // Helper: split string to array
-        const strToList = (id) => document.getElementById(id).value.split(',').map(s=>s.trim()).filter(s=>s);
-        rec.equipments_required = strToList('equipments');
-        rec.primary_muscle_groups = strToList('primary_muscles');
-        rec.secondary_muscle_groups = strToList('secondary_muscle_groups');
+        const list = (id) => document.getElementById(id).value.split(',').map(s=>s.trim()).filter(s=>s);
+        rec.equipments_required = list('equipments');
+        rec.primary_muscle_groups = list('primary_muscles');
+        rec.secondary_muscle_groups = list('secondary_muscle_groups');
         rec.steps = document.getElementById('steps').value.split('\n').map(s=>s.trim()).filter(s=>s);
 
-        // 2. API Config
         const user = localStorage.getItem('gh_username');
         const repo = localStorage.getItem('gh_repo');
         const token = localStorage.getItem('gh_token');
         const url = `https://api.github.com/repos/${user}/${repo}/contents/${JSON_PATH}`;
 
         try {
-            // Get SHA
-            const getReq = await fetch(url, { headers: { Authorization: `token ${token}` } });
-            if(!getReq.ok) throw new Error("Auth failed or file not found.");
-            const getJson = await getReq.json();
+            const getRes = await fetch(url, { headers: { Authorization: `token ${token}` } });
+            if(!getRes.ok) throw new Error("Connect failed");
+            const getJson = await getRes.json();
 
-            // Push Update
-            const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 4))));
-            
-            const putReq = await fetch(url, {
+            const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+            const putRes = await fetch(url, {
                 method: 'PUT',
                 headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: `Updated: ${rec.name}`,
-                    content: contentEncoded,
-                    sha: getJson.sha
-                })
+                body: JSON.stringify({ message: `Updated ${rec.name}`, content: content, sha: getJson.sha })
             });
 
-            if(!putReq.ok) throw new Error("Write failed.");
-            
-            msg.innerText = "✅ Saved to GitHub!";
-            msg.style.color = "green";
-        } catch (e) {
-            msg.innerText = "❌ Error: " + e.message;
-            msg.style.color = "red";
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "💾 Save Changes";
-        }
+            if(!putRes.ok) throw new Error("Write failed");
+            msg.innerText = "✅ Saved!"; msg.style.color = "green";
+        } catch (e) { msg.innerText = "❌ " + e.message; msg.style.color = "red"; } 
+        finally { btn.disabled = false; btn.innerText = "💾 Save Changes"; }
     }
 
-    // Start
     checkAuth();
 </script>
 </body>
