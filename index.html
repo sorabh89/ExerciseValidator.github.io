@@ -8,42 +8,77 @@
         :root { --primary: #007bff; --bg: #f8f9fa; --surface: #ffffff; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); padding: 20px; max-width: 1400px; margin: 0 auto; }
         
-        .grid { display: grid; grid-template-columns: 1fr 450px; gap: 20px; }
-        .card { background: var(--surface); padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .grid { display: grid; grid-template-columns: 1fr 500px; gap: 20px; } /* Increased right column width */
+        .card { background: var(--surface); padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         h2 { margin: 0; font-size: 1.2rem; color: #333; }
         
-        label { display: block; font-size: 0.85rem; font-weight: 600; color: #666; margin-top: 10px; margin-bottom: 4px; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
-        .row { display: flex; gap: 10px; }
+        label { display: block; font-size: 0.9rem; font-weight: 700; color: #444; margin-top: 15px; margin-bottom: 6px; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 14px; }
+        .row { display: flex; gap: 15px; }
         .col { flex: 1; }
 
-        .preview-box { background: #eee; min-height: 250px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
+        /* --- IMAGES & PREVIEW --- */
+        .preview-box { background: #e9ecef; min-height: 250px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
         .preview-img { width: 100%; height: auto; display: block; }
         
-        .icon-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px; }
-        .icon-wrapper { text-align: center; width: 60px; }
-        .icon-item { width: 50px; height: 50px; object-fit: contain; background: #fff; border: 1px solid #eee; padding: 5px; border-radius: 8px; }
-        .icon-label { font-size: 10px; color: #555; margin-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        /* --- ICONS (UPSIZED) --- */
+        .icon-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; }
         
-        button { cursor: pointer; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; }
+        .icon-wrapper { 
+            text-align: center; 
+            width: 110px; /* Width of the whole item (icon + text) */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .icon-item { 
+            width: 100px;   /* NEW SIZE: 100px */
+            height: 100px;  /* NEW SIZE: 100px */
+            object-fit: contain; 
+            background: #fff; 
+            border: 1px solid #e0e0e0; 
+            padding: 8px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .icon-label { 
+            font-size: 13px; /* Larger text */
+            color: #333; 
+            margin-top: 6px; 
+            line-height: 1.3;
+            /* Allow text to wrap naturally instead of cutting off */
+            white-space: normal; 
+            word-wrap: break-word;
+        }
+        
+        /* --- BUTTONS --- */
+        button { cursor: pointer; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-save { background: #28a745; color: white; width: 100%; margin-top: 20px; font-size: 1rem; padding: 12px; }
-        
-        #settings-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .settings-box { background: white; padding: 30px; border-radius: 12px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-save { background: #28a745; color: white; width: 100%; margin-top: 25px; font-size: 1.1rem; padding: 15px; }
+        .btn-save:hover { background: #218838; }
+        .btn-save:disabled { background: #94d3a2; cursor: not-allowed; }
+
+        /* --- SETTINGS --- */
+        #settings-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
+        .settings-box { background: white; padding: 40px; border-radius: 16px; width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
 
 <div id="settings-overlay">
     <div class="settings-box">
-        <h3 style="margin-top:0">🔐 Authorization Required</h3>
-        <p style="font-size:0.9rem; color:#666; margin-bottom:15px">Enter your GitHub details.</p>
-        <label>GitHub Username</label> <input type="text" id="gh-username">
-        <label>Repository Name</label> <input type="text" id="gh-repo">
-        <label>Fine-grained Token</label> <input type="password" id="gh-token">
-        <button class="btn-primary" style="width:100%; margin-top:20px" onclick="saveSettings()">Access Database</button>
+        <h3 style="margin-top:0; font-size: 1.5rem;">🔐 Authorization</h3>
+        <p style="font-size:1rem; color:#666; margin-bottom:20px">Please enter your GitHub access details.</p>
+        
+        <label>GitHub Username</label> <input type="text" id="gh-username" placeholder="e.g. shanky">
+        <label>Repository Name</label> <input type="text" id="gh-repo" placeholder="e.g. TakatExercises">
+        <label>Fine-grained Token</label> <input type="password" id="gh-token" placeholder="github_pat_...">
+        
+        <button class="btn-primary" style="width:100%; margin-top:25px; padding: 15px;" onclick="saveSettings()">Access Database</button>
     </div>
 </div>
 
@@ -63,25 +98,25 @@
         <label>Description</label> <textarea id="description" style="height: 100px"></textarea>
         
         <div class="row">
-            <div class="col"><label>Equipments</label><textarea id="equipments" style="height: 60px"></textarea></div>
-            <div class="col"><label>Primary Muscles</label><textarea id="primary_muscles" style="height: 60px"></textarea></div>
+            <div class="col"><label>Equipments</label><textarea id="equipments" style="height: 80px"></textarea></div>
+            <div class="col"><label>Primary Muscles</label><textarea id="primary_muscles" style="height: 80px"></textarea></div>
         </div>
         <label>Secondary Muscles</label> <input type="text" id="secondary_muscles">
-        <label>Steps</label> <textarea id="steps" style="height: 150px"></textarea>
+        <label>Steps</label> <textarea id="steps" style="height: 200px"></textarea>
 
         <button class="btn-save" id="save-btn" onclick="saveToGitHub()">💾 Save Changes</button>
-        <p id="status-msg" style="text-align: center; margin-top: 10px; font-weight: bold;"></p>
+        <p id="status-msg" style="text-align: center; margin-top: 15px; font-weight: bold; min-height: 20px;"></p>
     </div>
 
     <div class="card" style="height: fit-content;">
         <label>Exercise Preview (Merged 180)</label>
         <div id="image-container" class="preview-box"></div>
-        <div style="text-align: center; font-size: 0.8rem; color: #888;" id="img-path-debug"></div>
+        <div style="text-align: center; font-size: 0.75rem; color: #999; word-break: break-all;" id="img-path-debug"></div>
 
-        <label>Equipments</label>
+        <label style="font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 30px;">Equipments</label>
         <div id="equip-icons" class="icon-grid"></div>
 
-        <label>Primary Muscles</label>
+        <label style="font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 30px;">Primary Muscles</label>
         <div id="muscle-icons" class="icon-grid"></div>
     </div>
 </div>
@@ -156,6 +191,7 @@
         'Landmine': 'landmine.png', 'Stick': 'stick.png', 'Triceps Extension Machine': 'tricep_extension_machine.png', 'Power Squat Machine': 'power_squat_machine.png'
     };
 
+    // --- APP LOGIC ---
     let data = [];
     let currentIndex = 0;
     const JSON_PATH = 'aggregated_output.json'; 
@@ -198,34 +234,26 @@
         document.getElementById('secondary_muscles').value = listStr('secondary_muscle_groups');
         document.getElementById('steps').value = (record.steps || []).join('\n');
 
-        // --- IMAGE LOGIC (Specific for Merged Path) ---
+        // --- IMAGE LOGIC (Merged Path) ---
         const container = document.getElementById('image-container');
         const pathDebug = document.getElementById('img-path-debug');
-        
-        // 1. Target the 180_path specifically
         const rawPath = record.csv_image_paths?.['180_path'];
 
         if (rawPath) {
-            // Raw: /Users/.../gym/gifs/merged/6/66951301/file.gif
-            // We want everything AFTER "/merged/"
-            // Split by "merged/" and take the second part
             const parts = rawPath.split('/merged/');
-            
             if (parts.length > 1) {
-                // Result: 6/66951301/file.gif
                 const relativePath = parts[1];
                 const webPath = `assets/images/merged/${relativePath}`;
-                
-                container.innerHTML = `<img src="${webPath}" class="preview-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\'color:red\'>File not found: ${webPath}</span>'">`;
+                container.innerHTML = `<img src="${webPath}" class="preview-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\'color:red; font-size:12px\'>File not found: ${webPath}</span>'">`;
                 pathDebug.innerText = webPath;
             } else {
-                container.innerHTML = '<span style="color:orange">Path does not contain "merged" folder structure</span>';
+                container.innerHTML = '<span style="color:orange">Path missing "/merged/"</span>';
             }
         } else {
-            container.innerHTML = '<span style="color:#888">No csv_image_paths["180_path"] found</span>';
+            container.innerHTML = '<span style="color:#999; font-size:12px">No 180_path found</span>';
         }
 
-        // --- ICONS LOGIC (Using Mappings) ---
+        // --- ICONS LOGIC ---
         renderIcons('equip-icons', record.equipments_required, equipments_mapping, 'equipments');
         renderIcons('muscle-icons', record.primary_muscle_groups, muscles_mapping, 'muscles');
     }
@@ -237,7 +265,6 @@
 
         items.forEach(item => {
             const cleanName = item.trim();
-            // LOOKUP IN MAPPING
             const fileName = mapping[cleanName];
             
             const wrapper = document.createElement('div');
@@ -250,7 +277,6 @@
                 img.onerror = () => { img.style.opacity = '0.3'; }; // Dim if missing
                 wrapper.appendChild(img);
             } else {
-                // If mapping not found, show a '?' placeholder
                 const placeholder = document.createElement('div');
                 placeholder.className = 'icon-item';
                 placeholder.style.display = 'flex'; placeholder.style.alignItems='center'; placeholder.style.justifyContent='center';
