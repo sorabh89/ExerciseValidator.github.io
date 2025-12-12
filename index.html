@@ -333,8 +333,14 @@
         document.getElementById('record-title').innerText = `${currentIndex + 1} / ${data.length} : ${record.name}`;
         
         ['id', 'code', 'name', 'description'].forEach(k => document.getElementById(k).value = record[k] || '');
+        
+        // --- 1. HANDLE NESTED EQUIPMENTS ARRAY FOR DISPLAY ---
+        // Flatten array to strings for text area: [["A", "B"]] -> "A, B"
+        const flatEquip = record.equipments_required ? record.equipments_required.flat() : [];
+        document.getElementById('equipments').value = flatEquip.join(', ');
+
+        // Standard arrays
         const listStr = (k) => (record[k] || []).join(', ');
-        document.getElementById('equipments').value = listStr('equipments_required');
         document.getElementById('primary_muscles').value = listStr('primary_muscle_groups');
         document.getElementById('secondary_muscles').value = listStr('secondary_muscle_groups');
         document.getElementById('steps').value = (record.steps || []).join('\n');
@@ -354,7 +360,8 @@
         } else { container.innerHTML = '<span style="color:#999">No 360_path found</span>'; }
 
         // --- ICONS LOGIC ---
-        renderIcons('equip-icons', record.equipments_required, equipments_mapping, 'equipments');
+        // Use flat array for equipment icons
+        renderIcons('equip-icons', flatEquip, equipments_mapping, 'equipments');
         renderIcons('muscle-icons', record.primary_muscle_groups, muscles_mapping, 'muscles');
     }
 
@@ -410,14 +417,17 @@
             return el ? el.value.split(',').map(s=>s.trim()).filter(s=>s.length > 0) : [];
         };
         
-        rec.equipments_required = list('equipments');
+        // --- 2. HANDLE NESTED EQUIPMENTS SAVE ---
+        // Wrap result in array: ["A", "B"] -> [["A", "B"]]
+        rec.equipments_required = [ list('equipments') ];
+        
         rec.primary_muscle_groups = list('primary_muscles');
         rec.secondary_muscle_groups = list('secondary_muscles');
         
         const stepsEl = document.getElementById('steps');
         if(stepsEl) rec.steps = stepsEl.value.split('\n').map(s=>s.trim()).filter(s=>s.length > 0);
 
-        // 2. Stringify and Copy
+        // 3. Stringify and Copy
         const jsonStr = JSON.stringify(rec, null, 2);
         
         navigator.clipboard.writeText(jsonStr).then(() => {
