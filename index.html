@@ -52,6 +52,13 @@
         input:focus, textarea:focus { border-color: var(--primary); outline: none; }
         .row { display: flex; gap: 15px; }
         .col { flex: 1; }
+
+        input[readonly] {
+            background-color: #e9ecef;
+            color: #495057;
+            cursor: not-allowed;
+            border-color: #dee2e6;
+        }
         
         /* Headers inside form */
         .section-header { margin-top: 25px; margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; color: #333; }
@@ -118,8 +125,8 @@
                 <div class="card">
                     <div class="section-header">Basic Info</div>
                     <div class="row">
-                        <div class="col" style="flex:0.3"><label>ID</label><input type="text" id="id"></div>
-                        <div class="col" style="flex:0.3"><label>Code</label><input type="text" id="code"></div>
+                        <div class="col" style="flex:0.3"><label>ID</label><input type="text" id="id" readonly></div>
+                        <div class="col" style="flex:0.3"><label>Code</label><input type="text" id="code" readonly></div>
                         <div class="col"><label>Name</label><input type="text" id="name"></div>
                     </div>
                     <label>Description</label> <textarea id="description" style="height: 60px"></textarea>
