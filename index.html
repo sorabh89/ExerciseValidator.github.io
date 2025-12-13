@@ -46,24 +46,29 @@
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         h2 { margin: 0; font-size: 1.4rem; color: #212529; font-weight: 700; }
         
-        label { display: block; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; color: #6c757d; margin-top: 20px; margin-bottom: 8px; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 15px; }
+        /* Form Inputs */
+        label { display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6c757d; margin-top: 15px; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 14px; }
         input:focus, textarea:focus { border-color: var(--primary); outline: none; }
-        .row { display: flex; gap: 20px; }
+        .row { display: flex; gap: 15px; }
         .col { flex: 1; }
+        
+        /* Headers inside form */
+        .section-header { margin-top: 25px; margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; color: #333; }
 
+        /* Preview */
         .preview-box { background: #f8f9fa; min-height: 400px; display: flex; align-items: center; justify-content: center; border-radius: 6px; margin-bottom: 20px; overflow: hidden; border: 1px solid #dee2e6; }
         .preview-img { width: 100%; height: auto; display: block; }
         
         /* Icons */
         .icon-container { margin-top: 10px; display: flex; flex-direction: column; gap: 15px; }
-        .icon-group { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+        .icon-group { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
         .icon-group-divider { width: 100%; text-align: center; border-bottom: 1px dashed #ccc; line-height: 0.1em; margin: 10px 0 10px; font-size: 12px; color: #888; font-weight: bold; }
         .icon-group-divider span { background: #fff; padding: 0 10px; }
 
-        .icon-wrapper { text-align: center; width: 110px; display: flex; flex-direction: column; align-items: center; }
-        .icon-item { width: 100px; height: 100px; object-fit: contain; background: #fff; border: 1px solid #dee2e6; padding: 10px; border-radius: 8px; }
-        .icon-label { font-size: 12px; color: #495057; margin-top: 6px; line-height: 1.3; white-space: normal; word-wrap: break-word; font-weight: 500;}
+        .icon-wrapper { text-align: center; width: 90px; display: flex; flex-direction: column; align-items: center; }
+        .icon-item { width: 70px; height: 70px; object-fit: contain; background: #fff; border: 1px solid #dee2e6; padding: 5px; border-radius: 8px; }
+        .icon-label { font-size: 11px; color: #495057; margin-top: 4px; line-height: 1.2; white-space: normal; word-wrap: break-word; font-weight: 500;}
 
         /* Libraries */
         .ref-header { font-size: 1.5rem; font-weight: bold; margin-bottom: 30px; color: #343a40; border-bottom: 2px solid #e9ecef; padding-bottom: 15px; }
@@ -111,19 +116,42 @@
 
             <div class="grid">
                 <div class="card">
+                    <div class="section-header">Basic Info</div>
                     <div class="row">
-                        <div class="col"><label>ID</label><input type="text" id="id"></div>
-                        <div class="col"><label>Code</label><input type="text" id="code"></div>
+                        <div class="col" style="flex:0.3"><label>ID</label><input type="text" id="id"></div>
+                        <div class="col" style="flex:0.3"><label>Code</label><input type="text" id="code"></div>
+                        <div class="col"><label>Name</label><input type="text" id="name"></div>
                     </div>
-                    <label>Name</label> <input type="text" id="name">
-                    <label>Description</label> <textarea id="description" style="height: 100px"></textarea>
+                    <label>Description</label> <textarea id="description" style="height: 60px"></textarea>
                     
+                    <div class="section-header">Muscles & Equipments</div>
                     <div class="row">
-                        <div class="col"><label>Equipments (Use ' | ' for groups)</label><textarea id="equipments" style="height: 80px" placeholder="Item A, Item B | Item C"></textarea></div>
-                        <div class="col"><label>Primary Muscles</label><textarea id="primary_muscles" style="height: 80px"></textarea></div>
+                        <div class="col"><label>Equipments (' | ' for groups)</label><textarea id="equipments" style="height: 60px" placeholder="Item A | Item B"></textarea></div>
                     </div>
-                    <label>Secondary Muscles</label> <input type="text" id="secondary_muscles">
-                    <label>Steps</label> <textarea id="steps" style="height: 250px"></textarea>
+                    <div class="row">
+                        <div class="col"><label>Primary Muscles</label><textarea id="primary_muscles" style="height: 60px"></textarea></div>
+                        <div class="col"><label>Secondary Muscles</label><textarea id="secondary_muscles" style="height: 60px"></textarea></div>
+                    </div>
+
+                    <div class="section-header">Categorization & Details</div>
+                    <div class="row">
+                        <div class="col"><label>Exercise Type</label><input type="text" id="exercise_type"></div>
+                        <div class="col"><label>Mechanics</label><input type="text" id="mechanics_type"></div>
+                        <div class="col"><label>Skill Level</label><input type="text" id="skill_level"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col"><label>Movement</label><input type="text" id="movement_type"></div>
+                        <div class="col"><label>Body Region</label><input type="text" id="body_region"></div>
+                    </div>
+                    
+                    <label>Categories (Comma separated)</label><input type="text" id="categories">
+                    <label>Similar Exercises (Comma separated)</label><input type="text" id="similar_exercises">
+
+                    <div class="section-header">Instructions</div>
+                    <label>Steps (One per line)</label> <textarea id="steps" style="height: 150px"></textarea>
+                    <label>Form Tips (One per line)</label> <textarea id="form_tips" style="height: 80px"></textarea>
+                    <label>Common Mistakes (One per line)</label> <textarea id="common_mistakes" style="height: 80px"></textarea>
+                    <label>Breathing Technique</label> <textarea id="breathing_technique" style="height: 60px"></textarea>
 
                     <button class="btn-copy" onclick="copyRecord()">📋 Copy Updated JSON Record</button>
                 </div>
@@ -138,6 +166,9 @@
 
                     <label style="font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 30px;">Primary Muscles</label>
                     <div id="muscle-icons" class="icon-container"></div>
+
+                    <label style="font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 30px;">Secondary Muscles</label>
+                    <div id="sec-muscle-icons" class="icon-container"></div>
                 </div>
             </div>
         </div>
@@ -288,29 +319,42 @@
         createGrid('equipments-grid', equipments_mapping, 'equipments');
     }
 
-    // --- RENDER FUNCTION (Handles grouping) ---
+    // --- RENDER FUNCTION ---
     function render() {
         if(!data.length) return;
         const record = data[currentIndex];
         document.getElementById('record-title').innerText = `${currentIndex + 1} / ${data.length} : ${record.name}`;
-        ['id', 'code', 'name', 'description'].forEach(k => document.getElementById(k).value = record[k] || '');
         
-        // 1. NESTED EQUIPMENTS DISPLAY: Join sub-arrays with " | "
+        // Basic fields
+        ['id', 'code', 'name', 'description'].forEach(k => document.getElementById(k).value = record[k] || '');
+
+        // New Single Fields
+        ['exercise_type', 'mechanics_type', 'skill_level', 'movement_type', 'body_region', 'breathing_technique'].forEach(k => {
+            document.getElementById(k).value = record[k] || '';
+        });
+
+        // 1. NESTED EQUIPMENTS DISPLAY
         const eqData = record.equipments_required || [];
-        // If data is [["A", "B"], ["C"]], mapped to "A, B | C"
         let eqText = "";
         if (eqData.length > 0 && Array.isArray(eqData[0])) {
              eqText = eqData.map(group => group.join(', ')).join(' | ');
         } else {
-             // Fallback for flat array [A, B] -> "A, B"
              eqText = eqData.join(', ');
         }
         document.getElementById('equipments').value = eqText;
 
+        // Comma separated lists
         const listStr = (k) => (record[k] || []).join(', ');
         document.getElementById('primary_muscles').value = listStr('primary_muscle_groups');
         document.getElementById('secondary_muscles').value = listStr('secondary_muscle_groups');
-        document.getElementById('steps').value = (record.steps || []).join('\n');
+        document.getElementById('categories').value = listStr('categories');
+        document.getElementById('similar_exercises').value = listStr('similar_exercises');
+
+        // Newline separated lists
+        const nlStr = (k) => (record[k] || []).join('\n');
+        document.getElementById('steps').value = nlStr('steps');
+        document.getElementById('form_tips').value = nlStr('form_tips');
+        document.getElementById('common_mistakes').value = nlStr('common_mistakes');
 
         // Images
         const container = document.getElementById('image-container');
@@ -328,6 +372,7 @@
         // Icons
         renderNestedIcons('equip-icons', eqData, equipments_mapping, 'equipments');
         renderNestedIcons('muscle-icons', record.primary_muscle_groups, muscles_mapping, 'muscles');
+        renderNestedIcons('sec-muscle-icons', record.secondary_muscle_groups, muscles_mapping, 'muscles');
     }
 
     // New Function to handle Nested Icons display
@@ -336,11 +381,9 @@
         container.innerHTML = '';
         if (!data) return;
 
-        // Helper to render a single list of items
         const renderList = (items) => {
             const groupDiv = document.createElement('div');
             groupDiv.className = 'icon-group';
-            
             items.forEach(item => {
                 const cleanName = item.trim();
                 const fileName = mapping[cleanName];
@@ -368,12 +411,9 @@
             container.appendChild(groupDiv);
         };
 
-        // Check if data is nested array [ [...], [...] ] or flat [ ... ]
         if (data.length > 0 && Array.isArray(data[0])) {
-            // It is nested
             data.forEach((group, index) => {
                 renderList(group);
-                // Add separator if not last item
                 if (index < data.length - 1) {
                     const sep = document.createElement('div');
                     sep.className = 'icon-group-divider';
@@ -382,7 +422,6 @@
                 }
             });
         } else {
-            // Flat array
             renderList(data);
         }
     }
@@ -399,28 +438,38 @@
     // --- COPY FUNCTIONALITY ---
     function copyRecord() {
         const rec = data[currentIndex];
-        rec.name = document.getElementById('name').value;
-        rec.description = document.getElementById('description').value;
         
-        // Helper for simple lists
+        // Single Strings
+        ['name', 'description', 'exercise_type', 'mechanics_type', 'skill_level', 'movement_type', 'body_region', 'breathing_technique'].forEach(k => {
+             rec[k] = document.getElementById(k).value;
+        });
+        
+        // Helper for comma lists
         const list = (id) => {
             const el = document.getElementById(id);
             return el ? el.value.split(',').map(s=>s.trim()).filter(s=>s.length > 0) : [];
         };
 
-        // --- SPECIAL PARSING FOR EQUIPMENTS ---
-        // 1. Get string from text box "A, B | C, D"
+        // Helper for newline lists
+        const nlList = (id) => {
+            const el = document.getElementById(id);
+            return el ? el.value.split('\n').map(s=>s.trim()).filter(s=>s.length > 0) : [];
+        };
+
+        // Nested Equipments
         const rawEq = document.getElementById('equipments').value;
-        // 2. Split by Pipe '|' to get groups
         const groups = rawEq.split('|');
-        // 3. Map each group to an array of trimmed strings
         rec.equipments_required = groups.map(g => g.split(',').map(s => s.trim()).filter(s => s.length > 0)).filter(g => g.length > 0);
         
+        // Arrays
         rec.primary_muscle_groups = list('primary_muscles');
         rec.secondary_muscle_groups = list('secondary_muscles');
+        rec.categories = list('categories');
+        rec.similar_exercises = list('similar_exercises');
         
-        const stepsEl = document.getElementById('steps');
-        if(stepsEl) rec.steps = stepsEl.value.split('\n').map(s=>s.trim()).filter(s=>s.length > 0);
+        rec.steps = nlList('steps');
+        rec.form_tips = nlList('form_tips');
+        rec.common_mistakes = nlList('common_mistakes');
 
         const jsonStr = JSON.stringify(rec, null, 2);
         
