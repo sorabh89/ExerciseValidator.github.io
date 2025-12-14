@@ -374,21 +374,30 @@
     }
 
     // --- RENDER FUNCTION ---
+    // --- RENDER FUNCTION (With Fallback Logic) ---
     function render() {
         if(!data.length) return;
         const record = data[currentIndex];
-        // Updated Title to show (Record # / Total)
         document.getElementById('record-title').innerText = `${currentIndex + 1} / ${data.length} : ${record.name}`;
         
-        // Basic fields
+        // --- 1. POPULATE TEXT FIELDS ---
         ['id', 'code', 'name', 'description'].forEach(k => document.getElementById(k).value = record[k] || '');
-
-        // New Single Fields
         ['exercise_type', 'mechanics_type', 'skill_level', 'movement_type', 'body_region', 'breathing_technique'].forEach(k => {
             document.getElementById(k).value = record[k] || '';
         });
 
-        // 1. NESTED EQUIPMENTS DISPLAY
+        const listStr = (k) => (record[k] || []).join(', ');
+        document.getElementById('primary_muscles').value = listStr('primary_muscle_groups');
+        document.getElementById('secondary_muscles').value = listStr('secondary_muscle_groups');
+        document.getElementById('categories').value = listStr('categories');
+        document.getElementById('similar_exercises').value = listStr('similar_exercises');
+
+        const nlStr = (k) => (record[k] || []).join('\n');
+        document.getElementById('steps').value = nlStr('steps');
+        document.getElementById('form_tips').value = nlStr('form_tips');
+        document.getElementById('common_mistakes').value = nlStr('common_mistakes');
+
+        // --- 2. NESTED EQUIPMENTS DISPLAY (A, B | C) ---
         const eqData = record.equipments_required || [];
         let eqText = "";
         if (eqData.length > 0 && Array.isArray(eqData[0])) {
@@ -398,33 +407,46 @@
         }
         document.getElementById('equipments').value = eqText;
 
-        // Comma separated lists
-        const listStr = (k) => (record[k] || []).join(', ');
-        document.getElementById('primary_muscles').value = listStr('primary_muscle_groups');
-        document.getElementById('secondary_muscles').value = listStr('secondary_muscle_groups');
-        document.getElementById('categories').value = listStr('categories');
-        document.getElementById('similar_exercises').value = listStr('similar_exercises');
-
-        // Newline separated lists
-        const nlStr = (k) => (record[k] || []).join('\n');
-        document.getElementById('steps').value = nlStr('steps');
-        document.getElementById('form_tips').value = nlStr('form_tips');
-        document.getElementById('common_mistakes').value = nlStr('common_mistakes');
-
-        // Images
+        // --- 3. SMART IMAGE LOGIC (GIF vs WebP Fallback) ---
         const container = document.getElementById('image-container');
         const pathDebug = document.getElementById('img-path-debug');
-        const rawPath = record.csv_image_paths?.['360_path'];
-        if (rawPath) {
-            const parts = rawPath.split('/merged/');
-            if (parts.length > 1) {
-                const webPath = `assets/images/merged/${parts[1]}`;
-                container.innerHTML = `<img src="${webPath}" class="preview-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\'color:red\'>File not found: ${webPath}</span>'">`;
-                pathDebug.innerText = webPath;
-            } else { container.innerHTML = '<span style="color:orange">Path missing "/merged/"</span>'; }
-        } else { container.innerHTML = '<span style="color:#999">No 360_path found</span>'; }
+        
+        let webPath = null;
+        let debugMsg = "";
 
-        // Icons
+        // PRIORITY 1: Check CSV (GIF)
+        if (record.csv_image_paths && record.csv_image_paths['360_path']) {
+            const raw = record.csv_image_paths['360_path'];
+            // Check if valid path structure
+            if (raw && raw.includes('/merged/')) {
+                webPath = `assets/images/merged/${raw.split('/merged/')[1]}`;
+                debugMsg = "Source: GIF (Merged 360)";
+            }
+        }
+
+        // PRIORITY 2: Fallback to WebP if no GIF found
+        if (!webPath && record.webp_image_paths && record.webp_image_paths['360_path']) {
+            const raw = record.webp_image_paths['360_path'];
+            // Check if valid path structure
+            if (raw && raw.includes('/webp/')) {
+                webPath = `assets/images/webp/${raw.split('/webp/')[1]}`;
+                debugMsg = "Source: WebP (360)";
+            }
+        }
+
+        // RENDER IMAGE
+        if (webPath) {
+            container.innerHTML = `<img src="${webPath}" class="preview-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\'color:red\'>File not found: ${webPath}</span>'">`;
+            // Show which source we are using (GIF or WebP)
+            pathDebug.innerText = `${debugMsg}: ${webPath}`;
+            pathDebug.style.color = "#28a745"; // Green text for success
+        } else {
+            container.innerHTML = '<span style="color:#999">No 360_path found in CSV or WebP</span>';
+            pathDebug.innerText = "Missing Paths";
+            pathDebug.style.color = "#dc3545"; // Red text for failure
+        }
+
+        // --- 4. ICONS ---
         renderNestedIcons('equip-icons', eqData, equipments_mapping, 'equipments');
         renderNestedIcons('muscle-icons', record.primary_muscle_groups, muscles_mapping, 'muscles');
         renderNestedIcons('sec-muscle-icons', record.secondary_muscle_groups, muscles_mapping, 'muscles');
