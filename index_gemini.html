@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Takat Exercises Editor</title>
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            /* Light Mode (Default) */
+            --primary: #007bff;
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --surface-secondary: #f8f9fa;
+            --border: #dee2e6;
+            --text-main: #212529;
+            --text-secondary: #6c757d;
+            --input-bg: #ffffff;
+            --input-border: #ced4da;
+            --icon-bg: #ffffff;
+            --readonly-bg: #e9ecef;
+            --shadow: rgba(0,0,0,0.08);
+        }
+
+        /* Dark Mode Overrides */
+        body.dark-mode {
+            --primary: #4dabf7; /* Lighter blue for dark bg */
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --surface-secondary: #2c2c2c;
+            --border: #333333;
+            --text-main: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --input-bg: #2d2d2d;
+            --input-border: #444444;
+            --icon-bg: #ffffff; /* Keep icons white bg so pngs look right */
+            --readonly-bg: #252525;
+            --shadow: rgba(0,0,0,0.3);
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg); color: var(--text-main);
+            margin: 0; padding: 0; 
+            height: 100vh; width: 100vw; display: flex; flex-direction: column; overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        .app-container { display: flex; flex: 1; width: 100%; height: 100%; background: var(--surface); }
+
+        /* --- Left Sidebar --- */
+        .left-tabs-container {
+            width: 60px; background: var(--surface-secondary); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding-top: 20px; align-items: center;
+            justify-content: space-between; /* Push theme toggle to bottom */
+            padding-bottom: 20px;
+        }
+        
+        .tabs-group { display: flex; flex-direction: column; align-items: center; width: 100%; }
+
+        .v-tab-btn {
+            writing-mode: vertical-rl; transform: rotate(180deg);
+            padding: 25px 15px; border: none; background: transparent;
+            color: var(--text-secondary); font-weight: 600; cursor: pointer; text-align: center; white-space: nowrap;
+            border-left: 3px solid transparent; transition: all 0.2s; font-size: 14px; margin-bottom: 5px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .v-tab-btn:hover { background: var(--border); color: var(--primary); }
+        .v-tab-btn.active {
+            background: var(--surface); color: var(--primary); border-left: 3px solid var(--primary);
+            width: 100%; margin-right: -1px; 
+        }
+
+        /* Theme Toggle Button */
+        .theme-btn {
+            background: transparent; border: 1px solid var(--border); 
+            color: var(--text-main); border-radius: 50%; width: 40px; height: 40px;
+            cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
+            transition: 0.3s;
+        }
+        .theme-btn:hover { background: var(--border); }
+
+        /* --- Main Content --- */
+        .main-content-container { flex: 1; overflow-y: auto; padding: 30px; position: relative; background: var(--surface); }
+        .main-panel { display: none; }
+        .main-panel.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .grid { display: grid; grid-template-columns: 1fr 500px; gap: 30px; height: fit-content; }
+        @media (max-width: 1200px) { .grid { grid-template-columns: 1fr; } }
+        
+        .card { background: var(--surface); padding: 30px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 2px 8px var(--shadow); }
+        
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        h2 { margin: 0; font-size: 1.4rem; color: var(--text-main); font-weight: 700; }
+        
+        /* Jump Input */
+        .jump-container { display: flex; align-items: center; gap: 10px; }
+        .jump-input { 
+            width: 60px; padding: 8px; text-align: center; font-weight: bold; 
+            border: 1px solid var(--input-border); border-radius: 6px; 
+            background: var(--input-bg); color: var(--text-main);
+        }
+
+        /* Form Inputs */
+        label { display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-top: 15px; margin-bottom: 5px; }
+        input, textarea { 
+            width: 100%; padding: 10px; 
+            border: 1px solid var(--input-border); 
+            background: var(--input-bg); color: var(--text-main);
+            border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 14px; 
+        }
+        input:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        
+        /* Read-only fields */
+        input[readonly] { background-color: var(--readonly-bg); color: var(--text-secondary); cursor: not-allowed; border-color: var(--border); }
+
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+        .section-header { margin-top: 25px; margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 5px; color: var(--text-main); }
+
+        /* Preview */
+        .preview-box { background: var(--surface-secondary); min-height: 400px; display: flex; align-items: center; justify-content: center; border-radius: 6px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border); }
+        .preview-img { width: 100%; height: auto; display: block; }
+        
+        /* Icons */
+        .icon-container { margin-top: 10px; display: flex; flex-direction: column; gap: 15px; }
+        .icon-group { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .icon-group-divider { width: 100%; text-align: center; border-bottom: 1px dashed var(--border); line-height: 0.1em; margin: 10px 0 10px; font-size: 12px; color: var(--text-secondary); font-weight: bold; }
+        .icon-group-divider span { background: var(--surface); padding: 0 10px; }
+
+        .icon-wrapper { text-align: center; width: 90px; display: flex; flex-direction: column; align-items: center; }
+        .icon-item { width: 70px; height: 70px; object-fit: contain; background: var(--icon-bg); border: 1px solid var(--border); padding: 5px; border-radius: 8px; }
+        .icon-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.2; white-space: normal; word-wrap: break-word; font-weight: 500;}
+
+        /* Libraries */
+        .ref-header { font-size: 1.5rem; font-weight: bold; margin-bottom: 30px; color: var(--text-main); border-bottom: 2px solid var(--border); padding-bottom: 15px; }
+        .ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; }
+        .ref-card {
+            display: flex; flex-direction: column; align-items: center; padding: 20px; 
+            border: 1px solid var(--border); border-radius: 10px;
+            cursor: pointer; transition: all 0.2s; background: var(--surface);
+        }
+        .ref-card:hover { box-shadow: 0 10px 20px var(--shadow); transform: translateY(-4px); border-color: var(--primary); }
+        .ref-card-icon { width: 100px; height: 100px; object-fit: contain; margin-bottom: 15px; }
+        .ref-card-label { font-size: 14px; text-align: center; word-break: break-word; font-weight: 600; color: var(--text-secondary); }
+        .ref-copy-hint { font-size: 10px; color: var(--primary); text-transform: uppercase; margin-top: 10px; font-weight: 800; opacity: 0; transition: 0.2s; }
+        .ref-card:hover .ref-copy-hint { opacity: 1; }
+
+        /* Buttons */
+        button { cursor: pointer; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-copy { background: #6610f2; color: white; width: 100%; margin-top: 30px; font-size: 1.1rem; padding: 16px; letter-spacing: 0.5px; }
+        .btn-copy:hover { background: #520dc2; }
+
+        #toast { visibility: hidden; min-width: 250px; background-color: #323232; color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
+</head>
+<body>
+
+<div id="toast">Copied to clipboard!</div>
+
+<div class="app-container">
+    <div class="left-tabs-container">
+        <div class="tabs-group">
+            <button class="v-tab-btn active" onclick="switchMainTab('home-panel', this)">Home</button>
+            <button class="v-tab-btn" onclick="switchMainTab('muscles-panel', this)">Muscles</button>
+            <button class="v-tab-btn" onclick="switchMainTab('equipments-panel', this)">Equipments</button>
+        </div>
+        
+        <button class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">
+            <span id="theme-icon">🌙</span>
+        </button>
+    </div>
+
+    <div class="main-content-container">
+        <div id="home-panel" class="main-panel active">
+            
+            <div class="top-bar">
+                <button class="btn-primary" onclick="changeRecord(-1)">← Previous</button>
+                
+                <div class="jump-container">
+                    <h2 id="record-title" style="margin:0">Loading...</h2>
+                    <span style="color:var(--text-secondary); font-size:14px; margin-left:15px;">Go to:</span>
+                    <input type="number" id="jump-input" class="jump-input" min="1" placeholder="#">
+                </div>
+
+                <button class="btn-primary" onclick="changeRecord(1)">Next →</button>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="section-header">Basic Info</div>
+                    <div class="row">
+                        <div class="col" style="flex:0.3"><label>ID</label><input type="text" id="id" readonly></div>
+                        <div class="col" style="flex:0.3"><label>Code</label><input type="text" id="code" readonly></div>
+                        <div class="col"><label>Name</label><input type="text" id="name"></div>
+                    </div>
+                    <label>Description</label> <textarea id="description" style="height: 60px"></textarea>
+                    
+                    <div class="section-header">Muscles & Equipments</div>
+                    <div class="row">
+                        <div class="col"><label>Equipments (' | ' for groups)</label><textarea id="equipments" style="height: 60px" placeholder="Item A | Item B"></textarea></div>
+                    </div>
+                    <div class="row">
+                        <div class="col"><label>Primary Muscles</label><textarea id="primary_muscles" style="height: 60px"></textarea></div>
+                        <div class="col"><label>Secondary Muscles</label><textarea id="secondary_muscles" style="height: 60px"></textarea></div>
+                    </div>
+
+                    <div class="section-header">Categorization & Details</div>
+                    <div class="row">
+                        <div class="col"><label>Exercise Type</label><input type="text" id="exercise_type"></div>
+                        <div class="col"><label>Mechanics</label><input type="text" id="mechanics_type"></div>
+                        <div class="col"><label>Skill Level</label><input type="text" id="skill_level"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col"><label>Movement</label><input type="text" id="movement_type"></div>
+                        <div class="col"><label>Body Region</label><input type="text" id="body_region"></div>
+                    </div>
+                    
+                    <label>Categories (Comma separated)</label><input type="text" id="categories">
+                    <label>Similar Exercises (Comma separated)</label><input type="text" id="similar_exercises">
+
+                    <div class="section-header">Instructions</div>
+                    <label>Steps (One per line)</label> <textarea id="steps" style="height: 150px"></textarea>
+                    <label>Form Tips (One per line)</label> <textarea id="form_tips" style="height: 80px"></textarea>
+                    <label>Common Mistakes (One per line)</label> <textarea id="common_mistakes" style="height: 80px"></textarea>
+                    <label>Breathing Technique</label> <textarea id="breathing_technique" style="height: 60px"></textarea>
+
+                    <button class="btn-copy" onclick="copyRecord()">📋 Copy Updated JSON Record</button>
+                </div>
+
+                <div class="card" style="height: fit-content;">
+                    <label style="margin-top:0">Exercise Preview (Merged 360)</label>
+                    <div id="image-container" class="preview-box"></div>
+                    <div style="text-align: center; font-size: 0.75rem; color: var(--text-secondary); word-break: break-all; margin-bottom: 20px;" id="img-path-debug"></div>
+
+                    <label style="font-size: 1.1rem; border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top: 30px;">Equipments</label>
+                    <div id="equip-icons" class="icon-container"></div>
+
+                    <label style="font-size: 1.1rem; border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top: 30px;">Primary Muscles</label>
+                    <div id="muscle-icons" class="icon-container"></div>
+
+                    <label style="font-size: 1.1rem; border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top: 30px;">Secondary Muscles</label>
+                    <div id="sec-muscle-icons" class="icon-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="muscles-panel" class="main-panel">
+            <div class="ref-header">Muscles Library</div>
+            <div id="muscles-grid" class="ref-grid"></div>
+        </div>
+
+        <div id="equipments-panel" class="main-panel">
+            <div class="ref-header">Equipments Library</div>
+            <div id="equipments-grid" class="ref-grid"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- MAPPINGS ---
+    const muscles_mapping = {
+        'Pectoralis Major': 'pectoralis_major.png', 'Deltoids': 'deltoids.png', 'Biceps Brachii': 'biceps_brachii.png',
+        'Triceps Brachii': 'triceps_brachii.png', 'Latissimus Dorsi': 'latissimus_dorsi.png', 'Gluteus Maximus': 'gluteus_maximus.png',
+        'Quadriceps': 'quadriceps.png', 'Hamstrings': 'hamstrings.png', 'Rectus Abdominis': 'rectus_abdominis.png',
+        'Serratus Anterior': 'serratus_anterior.png', 'Trapezius': 'trapezius.png', 'Erector Spinae': 'erector_spinae.png',
+        'Forearm Extensors': 'wrist_extensors.png', 'Forearm Flexors': 'wrist_flexors.png', 'Adductors': 'adductors.png',
+        'Calves': 'calves.png', 'Obliques': 'obliques.png', 'Hip Flexors': 'hip_flexors.png', 'Rhomboids': 'rhomboids.png',
+        'Infraspinatus': 'infraspinatus.png', 'Gluteus Medius': 'gluteus_medius.png', 'Tensor Fasciae Latae': 'tensor_fasciae_latae.png',
+        'Tibialis Anterior': 'tibialis_anterior.png', 'Brachialis': 'brachialis.png', 'Teres Major': 'teres_major.png',
+        'Brachioradialis': 'brachioradialis.png', 'Ankle Stabilizers': 'ankle_stabilizers.png', 'Teres Minor': 'teres_minor.png',
+        'Supraspinatus': 'supraspinatus.png', 'Sternocleidomastoid': 'sternocleidomastoid.png', 'Scalenes': 'scalenes.png',
+        'Levator Scapulae': 'levator_scapulae.png', 'Transverse Abdominis': 'transverse_abdominis.png', 'Piriformis': 'piriformis.png',
+        'Quadratus Lumborum': 'quadratus_lumborum.png', 'Deep Neck Flexors': 'deep_neck_flexors.png', 'Suprahyoid': 'suprahyoid.png',
+        'Intercostals': 'intercostals.png', 'Splenius Muscles': 'splenius_muscles.png', 'Semispinalis Capitis': 'semispinalis_capitis.jpeg',
+        'Soleus': 'soleus.png', 'Peroneals': 'peroneals.png', 'Tibialis Posterior': 'tibialis_posterior.jpeg', 'Subscapularis': 'subscapularis.png',
+        'Gluteus Minimus': 'gluteus_minimus.png', 'Iliopsoas': 'iliopsoas.png', 'Pronator Teres': 'pronator_teres.png',
+        'Pronator Quadratus': 'pronator_quadratus.jpeg', 'Supinator': 'supinator.png', 'Plantar Fascia': 'plantar_fascia.png',
+        'Intrinsic Foot Muscles': 'intrinsic_foot_muscles.png', 'Thenar Muscles': 'thenar_muscles.jpeg', 'Intrinsic Hand Muscles': 'intrinsic_hand_muscles.jpg',
+        'Sartorius': 'sartorius.png', 'Pectoralis Minor': 'pectoralis_minor.png', 'Diaphragm': 'diaphragm.jpg', 'Foot Extensors': 'foot_extensors.png',
+        'Popliteus': 'popliteus.png', 'Pectineus': 'pectineous.png'
+    };
+
+    const equipments_mapping = {
+        'Bodyweight': 'bodyweight.png', 'Wall': 'wall.png', 'Partner': 'partner.png', 'Dumbbells': 'dumbbells.png',
+        'Bosu Ball': 'bosu_ball.png', 'Kettlebell': 'kettlebell.png', 'Barbell': 'barbell.png',
+        'Triceps Press Down Rope Double Grip': 'triceps_press_down_rope_double_grip.png', 'Single Column Pulley Cable Machine': 'cable_pulley_tower.png',
+        '20 Inch Revolving Straight Bar': '20inch_revolving_straight_bar.png', '24 Inch Pro Style Revolving Lat Bar': '24inch_pro_style_revolving_lat_bar.png',
+        '28 Inch Revolving Curl Bar': '28inch_revolving_curl_bar.png', '34 Inch Pro Style Revolving Lat Bar': '34inch_pro_style_revolving_lat_bar.png',
+        '36 Inch Revolving Lat Bar': '36inch_revolving_lat_bar.png', '48 Inch Revolving Lat Bar': '48inch_revolving_lat_bar.png',
+        'Ab Coaster': 'ab_coaster.png', 'Ab Crunch Machine': 'ab_crunch_machine.png', 'Ab Roller': 'ab_roller.png',
+        'Abdominal Bench': 'abdominal_bench.png', 'Abdominal Seated Crunch Machine': 'abdominal_seated_crunch_machine.png', 'Adjustable Bench': 'adjustable_bench.png',
+        'Aerobic Platform': 'aerobic_platform.png', 'Agility Ladder': 'agility_ladder.png', 'Air Bike': 'air_bike.png', 'Ankle Strap': 'ankle_strap.png',
+        'Ankle Weights': 'ankle_weights.png', 'Arm Extension Machine': 'arm_extension_machine.png', 'Assisted Dip Machine': 'assisted_dip_machine.png',
+        'Barbell Pad': 'barbell_pad.png', 'Battle Ropes': 'battle_ropes.png', 'Bench Press': 'bench_press.png', 'Flat Bench': 'bench.png', 'Blocks': 'blocks.png',
+        'Bosu Ball With Handles': 'bosu_ball_with_handles.png', 'Cable Crossover Machine': 'cable_crossover_machine.png', 'Captains Chair': 'captains_chair.png',
+        'Chair': 'chair.png', 'Chest Fly Machine': 'chest_fly_machine.png', 'Climbing Rope': 'climbing_rope.png', 'Cones': 'cones.png',
+        'Decline Bench Press': 'decline_bench_press.png', 'Decline Bench': 'decline_bench.png', 'Deluxe Stirrup Handle': 'deluxe_stirrup_handle.png',
+        'Dip Bars': 'dip_bars.png', 'Dip Station': 'dip_station.png', 'Dragging Sled': 'dragging_sled.png', 'Dual Cable Machine': 'dual_cable_machine.png',
+        'Elliptical Trainer': 'elliptical_trainer.png', 'Exercise Mat': 'exercise_mat.png', 'EZ Curl Bar': 'ez_curl_bar.png', 'Front Pull Down Machine': 'front_pull_down_machine.png',
+        'Functional Trainer': 'functional_trainer.png', 'Glute Ham Developer': 'glute_ham_developer.png', 'Glute Kick-back Machine': 'glute_kick_back_machine.png',
+        'Gymnastic Rings': 'gymnastic_rings.png', 'Hack Squat Machine': 'hack_squat_machine.png', 'Head Harness': 'head_harness.png',
+        'Hip Abductor Adductor': 'hip_abductor_adductor.png', 'Hyperextension Roman Chair': 'hyperextension_roman_chair.png', 'Incline Bench Press': 'incline_bench_press.png',
+        'Incline Pectoral Fly': 'incline_pectoral_fly.png', 'Indoor Bike': 'indoor_bike.png', 'Jump Rope': 'jump_rope.png', 'Kneeling Leg Curl Machine': 'kneeling_leg_curl_machine.png',
+        'Lat Pull Down Machine': 'lat_pull_down_machine.png', 'Lateral Raise': 'lateral_raise.png', 'Leg Curl Machine': 'leg_curl_machine.png',
+        'Leg Extension Machine': 'leg_extension_machine.png', 'Leg Press': 'leg_press.png', 'Leg Raise Pullup Dip Tower': 'leg_raise_pullup_dip_tower.png',
+        'Lever Deadlift Machine': 'lever_deadlift_machine.png', 'Lever Front Pulldown Machine': 'lever_front_pulldown_machine.png', 'Lever Preacher Curl Machine': 'lever_preacher_curl_machine.png',
+        'Low Seated Row Machine': 'low_seated_row_machine.png', 'Lying Chest Press': 'lying_chest_press.png', 'Lying Leg Curl Machine': 'lying_leg_curl_machine.png',
+        'Medicine Ball': 'medicine_ball.png', 'Mini Trampoline': 'mini_trampoline.png', 'Multi Exercise Bar': 'multi_exercise_bar.png', 'Multi Purpose V Bar': 'multi_purpose_v_bar.png',
+        'Olympic Decline Bench': 'olympic_decline_bench.png', 'Olympic Flat Bench': 'olympic_flat_bench.png', 'Parallel Chest Press': 'parallel_chest_press.png',
+        'Plate Loaded Shoulder Press': 'plate_loaded_shoulder_press.png', 'Plyo Box': 'plyo_box.png', 'Power Rack': 'power_rack.png', 'Preacher Curl Bench': 'preacher_curl_bench.png',
+        'Pull-up Bar': 'pull_up_bar.png', 'Recumbent Exercise Bike': 'recumbent_exercise_bike.png', 'Resistance Band With Handles': 'resistance_band_with_handles.png',
+        'Resistance Band': 'resistance_band.png', 'Reverse Hyper Machine': 'reverse_hyper_machine.png', 'Rotary Torso Machine': 'rotary_torso_machine.png',
+        'Rowing Machine': 'rowing_machine.png', 'Seated Calf Raise': 'seated_calf_raise.png', 'Seated Dip Machine': 'seated_dip_machine.png',
+        'Seated Row Chinning Bar': 'seated_row_chinning_bar.png', 'Selectorised Recumbent Leg Press': 'selectorised_recumbent_leg_press.png', 'Shoulder Press': 'shoulder_press.png',
+        'Sliders': 'sliders.png', 'Smith Machine': 'smith_machine.png', 'Stability Ball': 'stability_ball.png', 'Standing Calf Machine': 'standing_calf_machine.png',
+        'Standing Chest Press': 'standing_chest_press.png', 'Suspension Trainers': 'suspension_trainers.png', 'T-bar Row Machine': 't_bar_row_machine.png',
+        'Trap Bar': 'trap_bar.png', 'Treadmill': 'treadmill.png', 'Triceps Bar': 'triceps_bar.png', 'Triceps Full Extension Bar': 'triceps_full_extension_bar.png',
+        'Triceps Hammer Rope Single Grip': 'triceps_hammer_rope_single_grip.png', 'Triceps Press Down Bar': 'triceps_press_down_bar.png', 'Triceps Press Machine': 'triceps_press_machine.png',
+        'Twist Disk Machine': 'twist_disk_machine.png', 'Under Desk Pedal': 'under_desk_pedal.png', 'Weight Plates': 'weight_plates.png', 'Hula Hoop': 'hula_hoop.png',
+        'Sissy Squat Machine': 'sissy_squat_machine.png', 'Plate-Loaded High Row Machine': 'plate_loaded_high_row_machine.png', 'Rocker Board': 'rocker_board.png',
+        'Massage Ball': 'massage_ball.png', 'Ab Pad': 'ab_pad.png', 'Towel': 'towel.png', 'Therapy Table': 'therapy_table.png',
+        'Plate-Loaded Incline Chest Press Machine': 'plate_loaded_incline_chest_press_machine.png', 'Parallel Grip Lat Pulldown Bar': 'parallel_grip_lat_pulldown_bar.png',
+        'Power Twister': 'power_twister.png', 'Vertical Climbing Ladder': 'vertical_climbing_ladder.png', 'Lever Decline Chest Press Machine': 'lever_decline_chest_press_machine.png',
+        'Seated Converging Chest Press Machine': 'seated_converging_chest_press_machine.png', 'Lever Chair Squat Machine': 'lever_chair_squat_machine.png',
+        'Standing Glute Kick-back Machine': 'standing_glute_kickback_machine.png', 'Tib Bar': 'tib_bar.png', 'Lever Bent-over Row Machine': 'lever_bent_over_row_machine.png',
+        'Landmine': 'landmine.png', 'Stick': 'stick.png', 'Triceps Extension Machine': 'tricep_extension_machine.png', 'Power Squat Machine': 'power_squat_machine.png'
+    };
+
+    // --- APP LOGIC ---
+    let data = [];
+    let currentIndex = 0;
+    const JSON_PATH = 'aggregated_output.json'; 
+
+    function init() {
+        loadData();
+        switchMainTab('home-panel', document.querySelector('.v-tab-btn.active'));
+        renderRefTabs();
+        
+        // JUMP LISTENER
+        const jumpInput = document.getElementById('jump-input');
+        if (jumpInput) {
+            jumpInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') jumpToRecord();
+            });
+        }
+
+        // LOAD THEME
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('theme-icon').innerText = '☀️';
+        }
+    }
+
+    async function loadData() {
+        try {
+            const res = await fetch(JSON_PATH);
+            if(!res.ok) throw new Error("Failed to load JSON");
+            data = await res.json();
+            const savedIndex = localStorage.getItem('current_index');
+            currentIndex = savedIndex ? parseInt(savedIndex) : 0;
+            render();
+        } catch (e) { alert("Could not load data. Ensure aggregated_output.json is in the folder."); }
+    }
+
+    // --- THEME LOGIC ---
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        document.getElementById('theme-icon').innerText = isDark ? '☀️' : '🌙';
+    }
+
+    // --- NAVIGATION ---
+    function changeRecord(dir) {
+        const newIdx = currentIndex + dir;
+        if(newIdx >= 0 && newIdx < data.length) {
+            currentIndex = newIdx;
+            localStorage.setItem('current_index', currentIndex);
+            render();
+        }
+    }
+
+    function jumpToRecord() {
+        const input = document.getElementById('jump-input');
+        const val = parseInt(input.value);
+        if (isNaN(val) || val < 1 || val > data.length) {
+            alert(`Please enter a number between 1 and ${data.length}`);
+            return;
+        }
+        currentIndex = val - 1;
+        localStorage.setItem('current_index', currentIndex);
+        render();
+        input.value = ''; 
+    }
+
+    function switchMainTab(panelId, btnElement) {
+        document.querySelectorAll('.main-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.v-tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(panelId).classList.add('active');
+        btnElement.classList.add('active');
+    }
+
+    function showToast(message) {
+        const t = document.getElementById("toast");
+        t.innerText = message;
+        t.className = "show";
+        setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+    }
+
+    function renderRefTabs() {
+        const createGrid = (containerId, mapping, folder) => {
+            const container = document.getElementById(containerId);
+            const keys = Object.keys(mapping).sort();
+            keys.forEach(key => {
+                const card = document.createElement('div');
+                card.className = 'ref-card';
+                card.onclick = () => {
+                    navigator.clipboard.writeText(key);
+                    showToast(`Copied: ${key}`);
+                };
+                const img = document.createElement('img');
+                img.src = `assets/${folder}/${mapping[key]}`;
+                img.className = 'ref-card-icon';
+                const label = document.createElement('div');
+                label.className = 'ref-card-label';
+                label.innerText = key;
+                const hint = document.createElement('div');
+                hint.className = 'ref-copy-hint';
+                hint.innerText = "CLICK TO COPY";
+                card.appendChild(img); card.appendChild(label); card.appendChild(hint);
+                container.appendChild(card);
+            });
+        };
+        createGrid('muscles-grid', muscles_mapping, 'muscles');
+        createGrid('equipments-grid', equipments_mapping, 'equipments');
+    }
+
+    // --- RENDER FUNCTION ---
+    function render() {
+        if(!data.length) return;
+        const record = data[currentIndex];
+        document.getElementById('record-title').innerText = `${currentIndex + 1} / ${data.length} : ${record.name}`;
+        
+        // 1. POPULATE TEXT FIELDS
+        ['id', 'code', 'name', 'description'].forEach(k => document.getElementById(k).value = record[k] || '');
+        ['exercise_type', 'mechanics_type', 'skill_level', 'movement_type', 'body_region', 'breathing_technique'].forEach(k => {
+            document.getElementById(k).value = record[k] || '';
+        });
+
+        const listStr = (k) => (record[k] || []).join(', ');
+        document.getElementById('primary_muscles').value = listStr('primary_muscle_groups');
+        document.getElementById('secondary_muscles').value = listStr('secondary_muscle_groups');
+        document.getElementById('categories').value = listStr('categories');
+        document.getElementById('similar_exercises').value = listStr('similar_exercises');
+
+        const nlStr = (k) => (record[k] || []).join('\n');
+        document.getElementById('steps').value = nlStr('steps');
+        document.getElementById('form_tips').value = nlStr('form_tips');
+        document.getElementById('common_mistakes').value = nlStr('common_mistakes');
+
+        // 2. NESTED EQUIPMENTS DISPLAY
+        const eqData = record.equipments_required || [];
+        let eqText = "";
+        if (eqData.length > 0 && Array.isArray(eqData[0])) {
+             eqText = eqData.map(group => group.join(', ')).join(' | ');
+        } else {
+             eqText = eqData.join(', ');
+        }
+        document.getElementById('equipments').value = eqText;
+
+        // 3. SMART IMAGE LOGIC (GIF vs WebP Fallback)
+        const container = document.getElementById('image-container');
+        const pathDebug = document.getElementById('img-path-debug');
+        let webPath = null;
+        let debugMsg = "";
+
+        if (record.csv_image_paths && record.csv_image_paths['360_path']) {
+            const raw = record.csv_image_paths['360_path'];
+            if (raw && raw.includes('/merged/')) {
+                webPath = `assets/images/merged/${raw.split('/merged/')[1]}`;
+                debugMsg = "Source: GIF (Merged 360)";
+            }
+        }
+
+        if (!webPath && record.webp_image_paths && record.webp_image_paths['360_path']) {
+            const raw = record.webp_image_paths['360_path'];
+            if (raw && raw.includes('/webp/')) {
+                webPath = `assets/images/webp/${raw.split('/webp/')[1]}`;
+                debugMsg = "Source: WebP (360)";
+            }
+        }
+
+        if (webPath) {
+            container.innerHTML = `<img src="${webPath}" class="preview-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\'color:red\'>File not found: ${webPath}</span>'">`;
+            pathDebug.innerText = `${debugMsg}: ${webPath}`;
+            pathDebug.style.color = "#28a745"; 
+        } else {
+            container.innerHTML = '<span style="color:#999">No 360_path found in CSV or WebP</span>';
+            pathDebug.innerText = "Missing Paths";
+            pathDebug.style.color = "#dc3545"; 
+        }
+
+        // 4. ICONS
+        renderNestedIcons('equip-icons', eqData, equipments_mapping, 'equipments');
+        renderNestedIcons('muscle-icons', record.primary_muscle_groups, muscles_mapping, 'muscles');
+        renderNestedIcons('sec-muscle-icons', record.secondary_muscle_groups, muscles_mapping, 'muscles');
+    }
+
+    function renderNestedIcons(containerId, data, mapping, folder) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        if (!data) return;
+
+        const renderList = (items) => {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'icon-group';
+            items.forEach(item => {
+                const cleanName = item.trim();
+                const fileName = mapping[cleanName];
+                const wrapper = document.createElement('div');
+                wrapper.className = 'icon-wrapper';
+                if (fileName) {
+                    const img = document.createElement('img');
+                    img.src = `assets/${folder}/${fileName}`; 
+                    img.className = 'icon-item';
+                    img.onerror = () => { img.style.opacity = '0.3'; };
+                    wrapper.appendChild(img);
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'icon-item';
+                    placeholder.innerText = '?';
+                    placeholder.style.display='flex'; placeholder.style.alignItems='center'; placeholder.style.justifyContent='center';
+                    wrapper.appendChild(placeholder);
+                }
+                const label = document.createElement('div');
+                label.className = 'icon-label';
+                label.innerText = cleanName;
+                wrapper.appendChild(label);
+                groupDiv.appendChild(wrapper);
+            });
+            container.appendChild(groupDiv);
+        };
+
+        if (data.length > 0 && Array.isArray(data[0])) {
+            data.forEach((group, index) => {
+                renderList(group);
+                if (index < data.length - 1) {
+                    const sep = document.createElement('div');
+                    sep.className = 'icon-group-divider';
+                    sep.innerHTML = '<span>OR</span>';
+                    container.appendChild(sep);
+                }
+            });
+        } else {
+            renderList(data);
+        }
+    }
+
+    // --- COPY FUNCTIONALITY ---
+    function copyRecord() {
+        const rec = data[currentIndex];
+        
+        ['name', 'description', 'exercise_type', 'mechanics_type', 'skill_level', 'movement_type', 'body_region', 'breathing_technique'].forEach(k => {
+             rec[k] = document.getElementById(k).value;
+        });
+        
+        const list = (id) => {
+            const el = document.getElementById(id);
+            return el ? el.value.split(',').map(s=>s.trim()).filter(s=>s.length > 0) : [];
+        };
+
+        const nlList = (id) => {
+            const el = document.getElementById(id);
+            return el ? el.value.split('\n').map(s=>s.trim()).filter(s=>s.length > 0) : [];
+        };
+
+        const rawEq = document.getElementById('equipments').value;
+        const groups = rawEq.split('|');
+        rec.equipments_required = groups.map(g => g.split(',').map(s => s.trim()).filter(s => s.length > 0)).filter(g => g.length > 0);
+        
+        rec.primary_muscle_groups = list('primary_muscles');
+        rec.secondary_muscle_groups = list('secondary_muscles');
+        rec.categories = list('categories');
+        rec.similar_exercises = list('similar_exercises');
+        
+        rec.steps = nlList('steps');
+        rec.form_tips = nlList('form_tips');
+        rec.common_mistakes = nlList('common_mistakes');
+
+        const jsonStr = JSON.stringify(rec, null, 2);
+        
+        navigator.clipboard.writeText(jsonStr).then(() => {
+            showToast("✅ JSON Object copied to clipboard!");
+        }).catch(err => {
+            alert("Failed to copy text: " + err);
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
