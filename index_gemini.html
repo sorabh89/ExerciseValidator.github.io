@@ -287,7 +287,10 @@
         <h2 style="border:none; margin-bottom: 10px;">✨ Update with Gemini</h2>
         
         <label>Gemini API Key (Saved locally)</label>
-        <input type="password" id="gemini-api-key" placeholder="Paste API Key here...">
+        <div style="display:flex; gap:10px;">
+            <input type="password" id="gemini-api-key" placeholder="Paste API Key here..." style="flex:1">
+            <button onclick="checkModels()" class="btn-primary" style="background:#6c757d; font-size:12px; padding: 0 10px;" title="Check if key works">🔎 Check Models</button>
+        </div>
         
         <label>Custom Instruction (Optional)</label>
         <p style="font-size: 12px; color: var(--text-secondary); margin-top: -5px; margin-bottom: 10px;">
@@ -303,6 +306,10 @@
 </div>
 
 <script>
+    // --- GEMINI MODEL CONFIG ---
+    // If checkModels() shows you 'gemini-pro', change this value to 'gemini-pro'
+    let CURRENT_MODEL = 'gemini-1.5-flash'; 
+
     // --- MASTER LISTS FOR PROMPT ---
     const ALLOWED_MUSCLES_LIST = `
 Pectoralis Major, Deltoids, Biceps Brachii, Triceps Brachii, Latissimus Dorsi, Gluteus Maximus, Quadriceps, Hamstrings, Rectus Abdominis, Serratus Anterior, Trapezius, Erector Spinae, Forearm Extensors, Forearm Flexors, Adductors, Calves, Obliques, Hip Flexors, Rhomboids, Infraspinatus, Gluteus Medius, Tensor Fasciae Latae, Tibialis Anterior, Brachialis, Teres Major, Brachioradialis, Ankle Stabilizers, Teres Minor, Supraspinatus, Sternocleidomastoid, Scalenes, Levator Scapulae, Transverse Abdominis, Piriformis, Quadratus Lumborum, Deep Neck Flexors, Suprahyoid, Intercostals, Splenius Muscles, Semispinalis Capitis, Soleus, Peroneals, Tibialis Posterior, Subscapularis, Gluteus Minimus, Iliopsoas, Pronator Teres, Pronator Quadratus, Supinator, Plantar Fascia, Intrinsic Foot Muscles, Thenar Muscles, Intrinsic Hand Muscles, Sartorius, Pectoralis Minor, Diaphragm, Foot Extensors, Popliteus, Pectineus, Pelvic Floor`;
@@ -670,6 +677,24 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
         document.getElementById('ai-modal').classList.remove('active');
     }
 
+    // --- NEW: DIAGNOSTIC FUNCTION ---
+    async function checkModels() {
+        const key = document.getElementById('gemini-api-key').value.trim();
+        if(!key) { alert("Please enter API Key first"); return; }
+        
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+            const data = await res.json();
+            
+            if(data.error) throw new Error(data.error.message);
+            
+            const modelNames = data.models.map(m => m.name.replace('models/', '')).join('\n');
+            alert("✅ AVAILABLE MODELS FOR YOUR KEY:\n\n" + modelNames + "\n\n(If 'gemini-1.5-flash' is not here, use one from this list in the code)");
+        } catch(e) {
+            alert("❌ FAILED TO LIST MODELS:\n" + e.message);
+        }
+    }
+
     async function runGeminiUpdate() {
         const key = document.getElementById('gemini-api-key').value.trim();
         const userCustomMessage = document.getElementById('gemini-prompt').value.trim();
@@ -690,7 +715,7 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
         try {
             const currentRec = data[currentIndex];
             
-            // 1. EXTRACT FILE INFO (Use raw data, not UI data, to get paths)
+            // 1. EXTRACT FILE INFO
             let gifUrl = "Unknown URL";
             let filename = "Unknown Filename";
 
@@ -753,7 +778,7 @@ ${ALLOWED_EQUIPMENT_LIST}
 `;
 
             // 3. CALL GEMINI
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${CURRENT_MODEL}:generateContent?key=${key}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -766,12 +791,10 @@ ${ALLOWED_EQUIPMENT_LIST}
             if (result.error) throw new Error(result.error.message);
 
             let rawText = result.candidates[0].content.parts[0].text;
-            // Clean up markdown
             rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-
             const updatedJson = JSON.parse(rawText);
 
-            // 4. MERGE DATA (Keep existing IDs/Paths, overwrite fields with AI data)
+            // 4. MERGE DATA
             data[currentIndex] = { ...data[currentIndex], ...updatedJson };
             
             render();
