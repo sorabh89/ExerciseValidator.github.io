@@ -731,11 +731,13 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
         
         let gifUrl = "Unknown URL";
         let filename = "Unknown Filename";
-        if (currentRec.webp_image_paths && currentRec.webp_image_paths['360_path']) {
-            gifUrl = currentRec.webp_image_paths['360_path'];
+        
+        // Priority: CSV > WebP
+        if (currentRec.csv_image_paths && currentRec.csv_image_paths['360_path']) {
+            gifUrl = currentRec.csv_image_paths['360_path'].replace("/Users/shanky/Documents/MyDrive/Takat/Personal/Gym/gym/gifs", "https://sorabh89.github.io/ExerciseValidator.github.io/assets/images");
             filename = gifUrl.split('/').pop();
-        } else if (currentRec.csv_image_paths && currentRec.csv_image_paths['360_path']) {
-            gifUrl = currentRec.csv_image_paths['360_path'];
+        } else if (currentRec.webp_image_paths && currentRec.webp_image_paths['360_path']) {
+            gifUrl = currentRec.webp_image_paths['360_path'].replace("/Users/shanky/Documents/MyDrive/Takat/Personal/Gym/gym", "https://sorabh89.github.io/ExerciseValidator.github.io/assets/images");
             filename = gifUrl.split('/').pop();
         }
 
