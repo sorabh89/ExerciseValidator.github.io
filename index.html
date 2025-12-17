@@ -145,13 +145,18 @@
             margin-bottom: 25px; padding: 15px; background: var(--surface-secondary);
             border-radius: 8px; border: 1px solid var(--border);
         }
-        .page-info { font-weight: bold; font-size: 14px; color: var(--text-main); margin: 0 15px; }
+        .page-info { font-weight: bold; font-size: 14px; color: var(--text-main); }
         .page-btn {
             background: var(--surface); border: 1px solid var(--border);
             padding: 8px 16px; border-radius: 6px; cursor: pointer; color: var(--text-main);
         }
         .page-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
         .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .page-input {
+            width: 60px !important; /* Force override generic input width */
+            padding: 6px; text-align: center; margin: 0 8px; font-weight: bold;
+        }
 
         /* Specific styles for Exercise Grid */
         .ex-card-top { font-size: 11px; color: var(--text-secondary); font-weight: bold; margin-bottom: 10px; }
@@ -307,15 +312,22 @@
                 <div style="display:flex; align-items:center; gap:10px;">
                     <label style="margin:0; width:auto; font-size:12px;">Items per page:</label>
                     <select id="ex-limit" onchange="updateExLimit()" style="width:auto; padding:5px 10px;">
-                        <option value="20">20</option>
-                        <option value="50" selected>50</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
                         <option value="100">100</option>
                         <option value="500">500</option>
                     </select>
                 </div>
-                <div style="display:flex; align-items:center;">
+                <div style="display:flex; align-items:center; gap: 8px;">
                     <button class="page-btn" onclick="changeExPage(-1)" id="btn-prev">Previous</button>
-                    <span id="ex-page-info" class="page-info">Page 1 of 1</span>
+                    
+                    <span class="page-info" style="margin:0">Page</span>
+                    <input type="number" id="ex-page-input" class="page-input" 
+                           onkeypress="if(event.key === 'Enter') jumpToExPage()" 
+                           onblur="jumpToExPage()"
+                           min="1">
+                    <span id="ex-total-pages" class="page-info" style="margin:0">of 1</span>
+
                     <button class="page-btn" onclick="changeExPage(1)" id="btn-next">Next</button>
                 </div>
             </div>
@@ -374,7 +386,7 @@
 Pectoralis Major, Deltoids, Biceps Brachii, Triceps Brachii, Latissimus Dorsi, Gluteus Maximus, Quadriceps, Hamstrings, Rectus Abdominis, Serratus Anterior, Trapezius, Erector Spinae, Forearm Extensors, Forearm Flexors, Adductors, Calves, Obliques, Hip Flexors, Rhomboids, Infraspinatus, Gluteus Medius, Tensor Fasciae Latae, Tibialis Anterior, Brachialis, Teres Major, Brachioradialis, Ankle Stabilizers, Teres Minor, Supraspinatus, Sternocleidomastoid, Scalenes, Levator Scapulae, Transverse Abdominis, Piriformis, Quadratus Lumborum, Deep Neck Flexors, Suprahyoid, Intercostals, Splenius Muscles, Semispinalis Capitis, Soleus, Peroneals, Tibialis Posterior, Subscapularis, Gluteus Minimus, Iliopsoas, Pronator Teres, Pronator Quadratus, Supinator, Plantar Fascia, Intrinsic Foot Muscles, Thenar Muscles, Intrinsic Hand Muscles, Sartorius, Pectoralis Minor, Diaphragm, Foot Extensors, Popliteus, Pectineus, Pelvic Floor`;
 
     const ALLOWED_EQUIPMENT_LIST = `
-Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Press Down Rope Double Grip, Single Column Pulley Cable Machine, 20 Inch Revolving Straight Bar, 24 Inch Pro Style Revolving Lat Bar, 28 Inch Revolving Curl Bar, 34 Inch Pro Style Revolving Lat Bar, 36 Inch Revolving Lat Bar, 48 Inch Revolving Lat Bar, Ab Coaster, Ab Crunch Machine, Ab Roller, Abdominal Bench, Abdominal Seated Crunch Machine, Adjustable Bench, Aerobic Platform, Agility Ladder, Air Bike, Ankle Strap, Ankle Weights, Arm Extension Machine, Assisted Dip Machine, Barbell Pad, Battle Ropes, Bench Press, Flat Bench, Blocks, Bosu Ball With Handles, Cable Crossover Machine, Captains Chair, Chair, Chest Fly Machine, Climbing Rope, Cones, Decline Bench Press, Decline Bench, Deluxe Stirrup Handle, Dip Bars, Dip Station, Dragging Sled, Elliptical Trainer, Exercise Mat, EZ Curl Bar, Front Pull Down Machine, Functional Trainer, Glute Ham Developer, Glute Kick-back Machine, Gymnastic Rings, Hack Squat Machine, Head Harness, Hip Abductor Adductor, Hyperextension Roman Chair, Incline Bench Press, Incline Pectoral Fly, Indoor Bike, Jump Rope, Kneeling Leg Curl Machine, Lat Pull Down Machine, Lateral Raise, Leg Curl Machine, Leg Extension Machine, Leg Press, Leg Raise Pullup Dip Tower, Lever Deadlift Machine, Lever Front Pulldown Machine, Lever Preacher Curl Machine, Low Seated Row Machine, Lying Chest Press, Lying Leg Curl Machine, Medicine Ball, Mini Trampoline, Multi Exercise Bar, Multi Purpose V Bar, Olympic Decline Bench, Olympic Flat Bench, Parallel Chest Press, Plate Loaded Shoulder Press, Plyo Box, Power Rack, Preacher Curl Bench, Pull-up Bar, Recumbent Exercise Bike, Resistance Band With Handles, Resistance Band, Reverse Hyper Machine, Rotary Torso Machine, Rowing Machine, Seated Calf Raise, Seated Dip Machine, Seated Row Chinning Bar, Selectorised Recumbent Leg Press, Shoulder Press, Sliders, Smith Machine, Stability Ball, Standing Calf Machine, Standing Chest Press, Suspension Trainers, T-bar Row Machine, Trap Bar, Treadmill, Triceps Bar, Triceps Full Extension Bar, Triceps Hammer Rope Single Grip, Triceps Press Down Bar, Triceps Press Machine, Twist Disk Machine, Under Desk Pedal, Weight Plates, Hula Hoop, Sissy Squat Machine, Plate-Loaded High Row Machine, Rocker Board, Massage Ball, Ab Pad, Towel, Therapy Table, Plate-Loaded Incline Chest Press Machine, Parallel Grip Lat Pulldown Bar, Power Twister, Vertical Climbing Ladder, Lever Decline Chest Press Machine, Seated Converging Chest Press Machine, Lever Chair Squat Machine, Wrist Roller, Neutral Grip Pull-up Handles, Lever Stepper Machine, Leverage High Row Machine, Lever Seated Row Machine, Dipping Belt, Lever Hip Abduction Machine, Dumbbell Rack, Stairs, Lever Standing Leg Raise Machine, Lever Donkey Calf Raise Machine, Lever Bent-over Row Machine, Fixed Bar, Lever Seated Leg Raise Crunch Machine, Reverse Pec Deck Machine, Back Extension Machine, Lever Shrug Machine, Foam Roller, Landmine, Wave Machine, Ski Ergometer, Ab Slings, Lever Hip Thrust Machine, Lever Lying Leg Raise Machine, Lever Neck Machine, Vibration Plate, Atlas Stone, Tire, Loading Pin with Handle, Stepmill, Stick, Viking Press Machine, Weighted Implement, Apollon's Axle, Strongman Shield, Hercules Hold Apparatus, Lever Pullover Machine, Strongman Wheelbarrow, Band Anchor Point, Reverse Push-Up Machine, Nordic Curl Bench, Ankle Anchor Strap, Seated Pulling Brace, Truck, Thick Rope, Yoke, Plate-Loaded Chest Press Machine, Stall Bars, Pulling Harness, Sandbag, Log Bar, Iron Block, Lever Gripper Machine, Crucifix Hold Implements, Arm Ergometer, Conan's Wheel Apparatus, Timber Carry Frame, Chains, Sledgehammer, Lever Decline Sit-up Machine, Arm Blaster, Sled Strap, Lever Belt Squat Machine, Skinfold Caliper, Push-up Handles, Vertical Pole, Car, Bench Board, Posture Correction Chair, Fingal's Fingers Apparatus, Keg, Lever Rotary Calf Machine, Body Scanner, Bioelectrical Impedance Scale, Lever Seated Good Morning Machine, Handboard, Heel Elevation Wedge, Safety Squat Bar, Table, Bed Sheet, Curved Treadmill, Monkey Bars, Bottle, Seated Row Bench, Hand Gripper, Tennis Ball, Weighted Vest, Pilates Reformer, Bicycle, Resistance Band Bar, Punching Bag, Boxing Gloves, Focus Mitts, Striking Shield, Pendulum Squat Machine, Stretching Strap, Hurdle, Dot Drill Mat, Balloon, Vertical Sit-Up Bench, Standing Glute Kick-back Machine, Tib Bar, Sit-and-Reach Box, Triceps Extension Machine, Power Squat Machine`;
+Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Press Down Rope Double Grip, Single Column Pulley Cable Machine, 20 Inch Revolving Straight Bar, 24 Inch Pro Style Revolving Lat Bar, 28 Inch Revolving Curl Bar, 34 Inch Pro Style Revolving Lat Bar, 36 Inch Revolving Lat Bar, 48 Inch Revolving Lat Bar, Ab Coaster, Ab Crunch Machine, Ab Roller, Abdominal Bench, Abdominal Seated Crunch Machine, Adjustable Bench, Aerobic Platform, Agility Ladder, Air Bike, Ankle Strap, Ankle Weights, Arm Extension Machine, Assisted Dip Machine, Barbell Pad, Battle Ropes, Bench Press, Flat Bench, Blocks, Bosu Ball With Handles, Cable Crossover Machine, Captains Chair, Chair, Chest Fly Machine, Climbing Rope, Cones, Decline Bench Press, Decline Bench, Deluxe Stirrup Handle, Dip Bars, Dip Station, Dragging Sled, Elliptical Trainer, Exercise Mat, EZ Curl Bar, Front Pull Down Machine, Functional Trainer, Glute Ham Developer, Glute Kick-back Machine, Gymnastic Rings, Hack Squat Machine, Head Harness, Hip Abductor Adductor, Hyperextension Roman Chair, Incline Bench Press, Incline Pectoral Fly, Indoor Bike, Jump Rope, Kneeling Leg Curl Machine, Lat Pull Down Machine, Lateral Raise, Leg Curl Machine, Leg Extension Machine, Leg Press, Leg Raise Pullup Dip Tower, Lever Deadlift Machine, Lever Front Pulldown Machine, Lever Preacher Curl Machine, Low Seated Row Machine, Lying Chest Press, Lying Leg Curl Machine, Medicine Ball, Mini Trampoline, Multi Exercise Bar, Multi Purpose V Bar, Olympic Decline Bench, Olympic Flat Bench, Parallel Chest Press, Plate Loaded Shoulder Press, Plyo Box, Power Rack, Preacher Curl Bench, Pull-up Bar, Recumbent Exercise Bike, Resistance Band With Handles, Resistance Band, Reverse Hyper Machine, Rotary Torso Machine, Rowing Machine, Seated Calf Raise, Seated Dip Machine, Seated Row Chinning Bar, Selectorised Recumbent Leg Press, Shoulder Press, Sliders, Smith Machine, Stability Ball, Standing Calf Machine, Standing Chest Press, Suspension Trainers, T-bar Row Machine, Trap Bar, Treadmill, Triceps Bar, Triceps Full Extension Bar, Triceps Hammer Rope Single Grip, Triceps Press Down Bar, Triceps Press Machine, Twist Disk Machine, Under Desk Pedal, Weight Plates, Hula Hoop, Sissy Squat Machine, Plate-Loaded High Row Machine, Rocker Board, Massage Ball, Ab Pad, Towel, Therapy Table, Plate-Loaded Incline Chest Press Machine, Parallel Grip Lat Pulldown Bar, Power Twister, Vertical Climbing Ladder, Lever Decline Chest Press Machine, Seated Converging Chest Press Machine, Lever Chair Squat Machine, Standing Glute Kick-back Machine, Tib Bar, Lever Bent-over Row Machine, Landmine, Stick, Triceps Extension Machine, Power Squat Machine`;
 
     // --- MAPPINGS ---
     const muscles_mapping = {
@@ -451,7 +463,7 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
     
     // PAGINATION STATE
     let exPage = 1;
-    let exLimit = 50;
+    let exLimit = 20; // Default limit
 
     const JSON_PATH = 'aggregated_output.json'; 
 
@@ -578,34 +590,59 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
         }
     }
 
-    // --- RENDER EXERCISES LIST WITH PAGINATION ---
+    function jumpToExPage() {
+        const input = document.getElementById('ex-page-input');
+        const total = data.length;
+        const totalPages = Math.ceil(total / exLimit);
+        let val = parseInt(input.value);
+
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > totalPages) val = totalPages;
+
+        exPage = val;
+        renderExercisesList();
+    }
+
+    // --- MEMORY-SAFE RENDER FUNCTION ---
     function renderExercisesList() {
         const container = document.getElementById('exercises-grid');
-        container.innerHTML = '';
+        
+        // 1. AGGRESSIVE MEMORY CLEANUP
+        const existingImages = container.querySelectorAll('img');
+        existingImages.forEach(img => {
+            img.src = "";       
+            img.removeAttribute('src'); 
+            img.remove();       
+        });
+
+        // 2. Clear anything remaining
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
 
         const total = data.length;
         if (total === 0) return;
 
         const totalPages = Math.ceil(total / exLimit);
         
-        // Ensure Page valid
         if(exPage < 1) exPage = 1;
         if(exPage > totalPages) exPage = totalPages;
 
-        // Update Info Text & Buttons
-        document.getElementById('ex-page-info').innerText = `Page ${exPage} of ${totalPages} (${total} total)`;
+        // Update Inputs
+        document.getElementById('ex-page-input').value = exPage;
+        document.getElementById('ex-total-pages').innerText = `of ${totalPages} (${total})`;
+        
         document.getElementById('btn-prev').disabled = (exPage === 1);
         document.getElementById('btn-next').disabled = (exPage === totalPages);
 
-        // Slice Data
         const startIndex = (exPage - 1) * exLimit;
         const slice = data.slice(startIndex, startIndex + exLimit);
 
+        const fragment = document.createDocumentFragment();
+
         slice.forEach((record, i) => {
-            // Calculate absolute index for navigation
             const absIndex = startIndex + i;
 
-            // 1. Resolve Image Path
             let webPath = null;
             if (record.csv_image_paths && record.csv_image_paths['360_path']) {
                 webPath = `assets/images/merged/${record.csv_image_paths['360_path'].split('/merged/')[1]}`;
@@ -614,7 +651,6 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
                 webPath = `assets/images/webp/${record.webp_image_paths['360_path'].split('/webp/')[1]}`;
             }
 
-            // 2. Build Card
             const card = document.createElement('div');
             card.className = 'ref-card';
             card.onclick = () => {
@@ -630,6 +666,9 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
 
             const img = document.createElement('img');
             img.className = 'ex-card-img';
+            img.loading = "lazy";
+            img.decoding = "async";
+
             if(webPath) {
                 img.src = webPath;
                 img.onerror = () => { img.style.opacity = '0.2'; };
@@ -644,10 +683,10 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
             card.appendChild(topLabel);
             card.appendChild(img);
             card.appendChild(nameLabel);
-            container.appendChild(card);
+            fragment.appendChild(card);
         });
         
-        // Scroll to top of panel
+        container.appendChild(fragment);
         document.getElementById('exercises-panel').scrollTop = 0;
     }
 
