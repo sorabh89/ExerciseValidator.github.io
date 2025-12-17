@@ -139,6 +139,10 @@
         .ref-copy-hint { font-size: 10px; color: var(--primary); text-transform: uppercase; margin-top: 10px; font-weight: 800; opacity: 0; transition: 0.2s; }
         .ref-card:hover .ref-copy-hint { opacity: 1; }
 
+        /* Specific styles for Exercise Grid */
+        .ex-card-top { font-size: 11px; color: var(--text-secondary); font-weight: bold; margin-bottom: 10px; }
+        .ex-card-img { width: 100%; height: 150px; object-fit: contain; margin-bottom: 10px; background: var(--icon-bg); border-radius: 6px; }
+
         button { cursor: pointer; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-copy { background: #6610f2; color: white; }
@@ -190,7 +194,8 @@
 <div class="app-container">
     <div class="left-tabs-container">
         <div class="tabs-group">
-            <button class="v-tab-btn active" onclick="switchMainTab('home-panel', this)">Home</button>
+            <button class="v-tab-btn active" onclick="switchMainTab('home-panel', this)" id="btn-tab-home">Home</button>
+            <button class="v-tab-btn" onclick="switchMainTab('exercises-panel', this)">Exercises</button>
             <button class="v-tab-btn" onclick="switchMainTab('muscles-panel', this)">Muscles</button>
             <button class="v-tab-btn" onclick="switchMainTab('equipments-panel', this)">Equipments</button>
         </div>
@@ -279,6 +284,11 @@
                     <div id="sec-muscle-icons" class="icon-container"></div>
                 </div>
             </div>
+        </div>
+
+        <div id="exercises-panel" class="main-panel">
+            <div class="ref-header">Exercises Gallery</div>
+            <div id="exercises-grid" class="ref-grid"></div>
         </div>
 
         <div id="muscles-panel" class="main-panel">
@@ -410,7 +420,7 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
 
     function init() {
         loadData();
-        switchMainTab('home-panel', document.querySelector('.v-tab-btn.active'));
+        switchMainTab('home-panel', document.querySelector('#btn-tab-home'));
         renderRefTabs();
         
         // JUMP LISTENER
@@ -437,6 +447,7 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
             const savedIndex = localStorage.getItem('current_index');
             currentIndex = savedIndex ? parseInt(savedIndex) : 0;
             render();
+            renderExercisesList(); // Render the new list
         } catch (e) { alert("Could not load data. Ensure aggregated_output.json is in the folder."); }
     }
 
@@ -511,6 +522,60 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
         };
         createGrid('muscles-grid', muscles_mapping, 'muscles');
         createGrid('equipments-grid', equipments_mapping, 'equipments');
+    }
+
+    // --- NEW: RENDER EXERCISES LIST ---
+    function renderExercisesList() {
+        const container = document.getElementById('exercises-grid');
+        container.innerHTML = '';
+
+        data.forEach((record, index) => {
+            // 1. Resolve Image Path (Reuse logic)
+            let webPath = null;
+            if (record.csv_image_paths && record.csv_image_paths['360_path']) {
+                webPath = `assets/images/merged/${record.csv_image_paths['360_path'].split('/merged/')[1]}`;
+            }
+            if (!webPath && record.webp_image_paths && record.webp_image_paths['360_path']) {
+                webPath = `assets/images/webp/${record.webp_image_paths['360_path'].split('/webp/')[1]}`;
+            }
+
+            // 2. Build Card
+            const card = document.createElement('div');
+            card.className = 'ref-card';
+            card.onclick = () => {
+                // Navigate to Home tab and select this record
+                currentIndex = index;
+                localStorage.setItem('current_index', currentIndex);
+                render();
+                // Simulate click on Home tab
+                document.getElementById('btn-tab-home').click();
+            };
+
+            // Top: ID : Code
+            const topLabel = document.createElement('div');
+            topLabel.className = 'ex-card-top';
+            topLabel.innerText = `${record.id} : ${record.code}`;
+
+            // Image
+            const img = document.createElement('img');
+            img.className = 'ex-card-img';
+            if(webPath) {
+                img.src = webPath;
+                img.onerror = () => { img.style.opacity = '0.2'; };
+            } else {
+                img.style.opacity = '0.2';
+            }
+
+            // Bottom: Name
+            const nameLabel = document.createElement('div');
+            nameLabel.className = 'ref-card-label';
+            nameLabel.innerText = record.name;
+
+            card.appendChild(topLabel);
+            card.appendChild(img);
+            card.appendChild(nameLabel);
+            container.appendChild(card);
+        });
     }
 
     // --- RENDER FUNCTION ---
