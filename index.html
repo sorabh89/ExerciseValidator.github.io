@@ -21,6 +21,7 @@
             --readonly-bg: #e9ecef;
             --shadow: rgba(0,0,0,0.08);
             --ai-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-color: #28a745;
         }
 
         /* Dark Mode Overrides */
@@ -37,6 +38,7 @@
             --icon-bg: #ffffff;
             --readonly-bg: #252525;
             --shadow: rgba(0,0,0,0.3);
+            --success-color: #2ea043;
         }
         
         body { 
@@ -166,6 +168,8 @@
         .btn-primary { background: var(--primary); color: white; }
         .btn-copy { background: #6610f2; color: white; }
         .btn-copy:hover { background: #520dc2; }
+        .btn-manual { background: var(--success-color); color: white; }
+        .btn-manual:hover { opacity: 0.9; }
 
         /* --- Buttons & Action Row --- */
         .action-row { display: flex; gap: 15px; margin-top: 30px; }
@@ -282,6 +286,9 @@
                         <button class="action-btn ai-btn" onclick="openAIModal()">
                             <span>✨ Regenerate</span>
                         </button>
+                        <button class="action-btn btn-manual" onclick="openJsonModal()">
+                            <span>📝 Update Json</span>
+                        </button>
                         <button class="action-btn btn-copy" onclick="copyRecord()">
                             <span>📋 Copy Json</span>
                         </button>
@@ -376,6 +383,21 @@
             <button class="btn-primary" style="flex:1; background: #764ba2; display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px;" onclick="runGeminiUpdate()" id="btn-run-ai">
                 <span>Generate</span>
             </button>
+        </div>
+    </div>
+</div>
+
+<div id="json-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h2 style="border:none; margin-bottom: 5px;">📝 Manual JSON Update</h2>
+        <p style="font-size: 11px; color: var(--text-secondary); margin-top: -5px; margin-bottom: 5px;">
+            Paste or edit the JSON below to update the current record.
+        </p>
+        <textarea id="manual-json-input" style="flex: 1; font-family: monospace; font-size: 13px; line-height: 1.4; white-space: pre; overflow-x: auto;" spellcheck="false"></textarea>
+        
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn-primary" style="flex:1; background: var(--text-secondary);" onclick="closeJsonModal()">Cancel</button>
+            <button class="btn-primary" style="flex:1; background: var(--success-color);" onclick="updateRecordFromJson()">Update</button>
         </div>
     </div>
 </div>
@@ -872,6 +894,32 @@ Bodyweight, Wall, Partner, Dumbbells, Bosu Ball, Kettlebell, Barbell, Triceps Pr
 
     function closeAIModal() {
         document.getElementById('ai-modal').classList.remove('active');
+    }
+
+    // --- JSON MANUAL UPDATE FUNCTIONALITY ---
+    function openJsonModal() {
+        document.getElementById('json-modal').classList.add('active');
+        // Pre-fill with current data to facilitate editing
+        const currentRec = getRecordFromUI();
+        document.getElementById('manual-json-input').value = JSON.stringify(currentRec, null, 2);
+    }
+
+    function closeJsonModal() {
+        document.getElementById('json-modal').classList.remove('active');
+    }
+
+    function updateRecordFromJson() {
+        const raw = document.getElementById('manual-json-input').value;
+        try {
+            const newObj = JSON.parse(raw);
+            // Merge to ensure we don't lose internal fields if user pasted partial json
+            data[currentIndex] = { ...data[currentIndex], ...newObj };
+            render();
+            closeJsonModal();
+            showToast("✅ Record updated manually!");
+        } catch(e) {
+            alert("Invalid JSON: " + e.message);
+        }
     }
 
     async function checkModels() {
